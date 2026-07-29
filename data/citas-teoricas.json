@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "texto": "Los objetos tienen como función estabilizar la vida humana y —contra Heráclito, que afirmaba que no nos bañamos dos veces en el mismo río— su objetividad se deriva del hecho de que los hombres, pese a su naturaleza cambiante, pueden recuperar su identidad al relacionarse con la misma silla, la misma mesa.",
+    "autor": "Hannah Arendt",
+    "fuente": "La condición humana — citada en Sadin, É. (2020). La inteligencia artificial o el desafío del siglo, p. 72"
+  },
+  {
+    "id": 2,
+    "texto": "El pasado destruido no vuelve más. La destrucción del pasado es quizás el principal crimen. Hoy, la conservación de lo poco que queda debería llegar a ser casi una idea fija.",
+    "autor": "Simone Weil",
+    "fuente": "Echar raíces, Madrid, Trotta, 2014 — citada en Sadin (2020), p. 283"
+  },
+  {
+    "id": 3,
+    "texto": "De aquí a poco tiempo toda esa pesadez no será sino un recuerdo vago. Pronto nos costará representárnosla, recordar todo aquello a lo que nos obligaba, así como todo aquello a lo cual nos abría.",
+    "autor": "Éric Sadin",
+    "fuente": "La inteligencia artificial o el desafío del siglo (2020), p. 247"
+  },
+  {
+    "id": 4,
+    "texto": "Como un río que desciende hacia el mar, si encuentra alguna ruta bloqueada, pronto halla otra por la que proseguir su curso.",
+    "autor": "Shoshana Zuboff",
+    "fuente": "La era del capitalismo de la vigilancia (2019), p. 191"
+  },
+  {
+    "id": 5,
+    "texto": "[El poder instrumentario] deja de ser una construcción humana y se vuelve algo más parecido a un río o un glaciar, es decir, una cosa que solo nos deja la posibilidad de sumarnos a ella o de soportarla.",
+    "autor": "Shoshana Zuboff",
+    "fuente": "La era del capitalismo de la vigilancia (2019), p. 557"
+  },
+  {
+    "id": 6,
+    "texto": "La filósofa Hannah Arendt dedicó todo el tomo de una obra a examinar la voluntad como el «órgano del futuro» en el mismo sentido en que la memoria es nuestro órgano mental del pasado.",
+    "autor": "Shoshana Zuboff",
+    "fuente": "La era del capitalismo de la vigilancia (2019), p. 471, citando a Hannah Arendt"
+  },
+  {
+    "id": 7,
+    "texto": "En los meses y en los años que siguieron, mis recuerdos fueron tomando una forma inesperada: no eran tanto de habitaciones y objetos como de sombras, luces y fragancias.",
+    "autor": "Shoshana Zuboff",
+    "fuente": "La era del capitalismo de la vigilancia (2019), p. 666"
+  },
+  {
+    "id": 8,
+    "texto": "Para quien sabe escuchar la casa del pasado, ¿no es acaso una geometría de ecos? Las voces, la voz del pasado resuena de otra manera en la gran estancia y en el cuarto pequeño. [...] En el orden de los recuerdos difíciles, mucho más allá de las geometrías del dibujo, hay que encontrar de nuevo la tonalidad de la luz, y después llegan los suaves aromas que quedan en las habitaciones vacías.",
+    "autor": "Gaston Bachelard",
+    "fuente": "La poética del espacio — citado en Zuboff (2019), p. 667"
+  },
+  {
+    "id": 9,
+    "texto": "¿Podría ser esta la razón por la que «la cultura se ha estancado»? [...] Las culturas digitales convergen hacia esta media, orbitando en torno a estilos, nociones e imágenes medianas, creando una corriente dominante estrecha.",
+    "autor": "Hito Steyerl",
+    "fuente": "Medium Hot (2024), p. 78"
+  },
+  {
+    "id": 10,
+    "texto": "Mi memoria está ahí, introduciendo algo de este pasado en este presente. Mi estado de alma, al avanzar en la ruta del tiempo, se infla continuamente con la duración que lo engrosa y hace, por decirlo así, una bola de nieve consigo mismo.",
+    "autor": "Henri Bergson",
+    "fuente": "La evolución creadora (1963), p. 440"
+  },
+  {
+    "id": 11,
+    "texto": "\"Duración real\" significa a la vez continuidad indivisible y creación.",
+    "autor": "Henri Bergson",
+    "fuente": "La evolución creadora (1963), p. 438"
+  },
+  {
+    "id": 12,
+    "texto": "Un artista genial ha pintado una figura en la tela. Podremos imitar su cuadro con mosaicos multicolores. Y reproduciremos tanto mejor las curvas y los matices del modelo cuanto más pequeños sean esos mosaicos [...] Pero sería necesaria una infinidad de elementos infinitamente pequeños [...] para obtener la exacta equivalencia de esta figura que el artista ha concebido como una cosa simple, que ha querido transportar totalmente a la tela y que está tanto más acabada cuanto mejor aparece como la proyección de una intuición indivisible.",
+    "autor": "Henri Bergson",
+    "fuente": "La evolución creadora (1963), p. 516"
+  },
+  {
+    "id": 13,
+    "texto": "[...] esta vaga intuición no nos presta ayuda alguna para dirigir nuestra acción sobre las cosas [...] puede presumirse que ella no se ejerce ya simplemente en superficie, sino en profundidad.",
+    "autor": "Henri Bergson",
+    "fuente": "La evolución creadora (1963), p. 478"
+  },
+  {
+    "id": 14,
+    "texto": "Los ríos, esos seres que siempre habitaron los mundos en diferentes formas, son quienes me sugieren que, si hay un futuro a pensar, ese futuro es an-cestral, porque ya estaba aquí.",
+    "autor": "Ailton Krenak",
+    "fuente": ""
+  }
+]
