@@ -2,7 +2,7 @@ databases:
   - name: rio-de-recuerdos-db
     databaseName: rio_de_recuerdos
     user: rio_de_recuerdos
-    plan: basic-256mb
+    plan: free
 
 services:
   - type: web
