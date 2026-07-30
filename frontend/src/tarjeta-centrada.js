@@ -69,14 +69,40 @@ function svg(contenido, tamaño = 20) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${tamaño}" height="${tamaño}">${contenido}</svg>`
 }
 
+// Contorno tipo estampilla postal: perforaciones semicirculares a lo largo de
+// todo el perímetro, calculadas según el ancho/alto real del elemento (se
+// adapta solo al largo de cada recuerdo escrito).
+function pathEstampilla(w, h, radio) {
+  const nTop = Math.max(3, Math.round(w / (2 * radio)))
+  const nLado = Math.max(3, Math.round(h / (2 * radio)))
+  const stepX = w / nTop
+  const stepY = h / nLado
+
+  let d = `M 0 0`
+  for (let i = 1; i <= nTop; i++) d += ` A ${stepX / 2} ${stepX / 2} 0 0 0 ${i * stepX} 0`
+  for (let i = 1; i <= nLado; i++) d += ` A ${stepY / 2} ${stepY / 2} 0 0 0 ${w} ${i * stepY}`
+  for (let i = 1; i <= nTop; i++) d += ` A ${stepX / 2} ${stepX / 2} 0 0 0 ${w - i * stepX} ${h}`
+  for (let i = 1; i <= nLado; i++) d += ` A ${stepY / 2} ${stepY / 2} 0 0 0 0 ${h - i * stepY}`
+  return d + ' Z'
+}
+
+function aplicarBordeEstampilla(el, radio = 7) {
+  const w = el.offsetWidth
+  const h = el.offsetHeight
+  if (!w || !h) return
+  el.style.clipPath = `path('${pathEstampilla(w, h, radio)}')`
+}
+
 export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}) {
   let indice = indiceInicial
+  let observadorRecuerdo = null
 
   const overlay = document.createElement('div')
   overlay.className = 'tarjeta-centrada-overlay'
   document.body.appendChild(overlay)
 
   function cerrar() {
+    observadorRecuerdo?.disconnect()
     overlay.remove()
     onCerrar?.()
   }
@@ -140,6 +166,17 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       e.stopPropagation()
       irA(indice + 1)
     })
+
+    const recuerdoEl = overlay.querySelector('.tc-recuerdo')
+    aplicarBordeEstampilla(recuerdoEl)
+
+    // El tamaño real de la tarjeta puede seguir moviéndose después de esta
+    // primera medición (fuente terminando de cargar, imagen vecina acomodando
+    // su lugar, etc.) — en vez de adivinar la causa, recalculamos el contorno
+    // cada vez que el tamaño real cambie.
+    observadorRecuerdo?.disconnect()
+    observadorRecuerdo = new ResizeObserver(() => aplicarBordeEstampilla(recuerdoEl))
+    observadorRecuerdo.observe(recuerdoEl)
   }
 
   render()
