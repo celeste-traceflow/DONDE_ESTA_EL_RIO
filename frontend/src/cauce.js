@@ -100,13 +100,11 @@ function ubicarEnCascada(items) {
       const normalY = dx / largoTangente
       const jitterPerp = (Math.random() - 0.5) * 60
 
-      const anguloTangente = (Math.atan2(dy, dx || 0.0001) * 180) / Math.PI
-
       puntos.push({
         ...item,
         x: x + normalX * jitterPerp,
         y: y + normalY * jitterPerp,
-        rotacion: anguloTangente * 0.25 + (Math.random() - 0.5) * 8,
+        rotacion: 0,
         ancho,
         alto,
       })
