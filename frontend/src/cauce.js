@@ -91,8 +91,8 @@ function ubicarEnCascada(items) {
 
     if (distAcumulada >= proximaDistancia) {
       const item = items[idx]
-      const ancho = item.tipo === 'recuerdo' ? 160 + Math.random() * 80 : 105
-      const alto = item.tipo === 'recuerdo' ? ancho * 1.2 : ancho * 0.9
+      const ancho = item.tipo === 'recuerdo' ? 160 + Math.random() * 80 : 150
+      const alto = item.tipo === 'recuerdo' ? ancho * 1.2 : ancho * 0.65
 
       // jitter perpendicular a la curva, para que no queden todas clavadas sobre la línea
       const largoTangente = Math.hypot(dx, dy) || 1

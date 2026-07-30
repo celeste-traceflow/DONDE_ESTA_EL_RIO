@@ -40,22 +40,22 @@
 .tarjeta-cita {
   background: var(--color-acento);
   color: var(--color-tinta);
-  padding: 0.6rem 0.65rem;
+  padding: 0.5rem 0.6rem;
   border-radius: 4px;
   box-shadow: 0 3px 10px rgba(43, 38, 32, 0.2);
 }
 
 .tarjeta-cita blockquote {
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.3rem;
   font-family: var(--font-autorial);
   font-weight: 600;
-  font-size: 0.55rem;
+  font-size: 0.42rem;
   line-height: 1.25;
 }
 
 .tarjeta-cita .autor {
   font-family: var(--font-maquina);
-  font-size: 0.45rem;
+  font-size: 0.34rem;
 }
 
 /* Pill superior con la sección actual */
