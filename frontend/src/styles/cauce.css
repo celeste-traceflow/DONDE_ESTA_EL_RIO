@@ -39,14 +39,13 @@
 
 .lazo-trazo {
   fill: none;
-  stroke: var(--color-tinta);
-  stroke-width: 1.5;
-  opacity: 0.55;
+  stroke: #fff;
+  stroke-width: 1;
+  opacity: 0.8;
 }
 
 .lazo:hover .lazo-trazo {
-  stroke-width: 2.5;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .lazo-punto {

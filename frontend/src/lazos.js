@@ -6,23 +6,40 @@ export function crearCapaLazos() {
   return svg
 }
 
-// Trazo serpenteante (nunca recto): dos puntos de control desplazados en
-// direcciones opuestas respecto a la línea directa, para que dibuje una
-// curva con más de una inflexión.
+// Trazo sinuoso (nunca recto): varias ondas a lo largo de la línea directa
+// (no solo una curva simple), suavizadas con quadratics encadenadas —
+// mismo espíritu que el meandro del propio Cauce.
 function pathSerpenteante(x1, y1, x2, y2) {
   const dx = x2 - x1
   const dy = y2 - y1
   const largo = Math.hypot(dx, dy) || 1
   const nx = -dy / largo
   const ny = dx / largo
-  const amplitud = Math.min(70, Math.max(20, largo * 0.12))
+  const amplitud = Math.min(26, Math.max(8, largo * 0.045))
+  const ondas = largo > 500 ? 4 : largo > 200 ? 3 : 2
 
-  const c1x = x1 + dx * 0.33 + nx * amplitud
-  const c1y = y1 + dy * 0.33 + ny * amplitud
-  const c2x = x1 + dx * 0.66 - nx * amplitud
-  const c2y = y1 + dy * 0.66 - ny * amplitud
+  const pasos = ondas * 2 + 2
+  const puntos = []
+  for (let i = 0; i <= pasos; i++) {
+    const t = i / pasos
+    const onda = Math.sin(t * Math.PI * ondas) * amplitud
+    puntos.push({
+      x: x1 + dx * t + nx * onda,
+      y: y1 + dy * t + ny * onda,
+    })
+  }
 
-  return `M ${x1} ${y1} C ${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}`
+  let d = `M ${puntos[0].x} ${puntos[0].y}`
+  for (let i = 1; i < puntos.length - 1; i++) {
+    const actual = puntos[i]
+    const siguiente = puntos[i + 1]
+    const medioX = (actual.x + siguiente.x) / 2
+    const medioY = (actual.y + siguiente.y) / 2
+    d += ` Q ${actual.x} ${actual.y} ${medioX} ${medioY}`
+  }
+  const ultimo = puntos[puntos.length - 1]
+  d += ` L ${ultimo.x} ${ultimo.y}`
+  return d
 }
 
 function formatearFecha(fechaIso) {
