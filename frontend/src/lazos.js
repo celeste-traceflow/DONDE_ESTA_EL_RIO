@@ -30,16 +30,27 @@ function formatearFecha(fechaIso) {
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
 }
 
-export function dibujarLazos(svg, conexiones, obtenerPosicion) {
+export function dibujarLazos(svg, conexiones, obtenerPosicion, focoClave, onClickOtroExtremo) {
   svg.innerHTML = ''
 
   for (const con of conexiones) {
-    const pa = obtenerPosicion(`${con.tipo_a}-${con.id_a}`)
-    const pb = obtenerPosicion(`${con.tipo_b}-${con.id_b}`)
+    const claveA = `${con.tipo_a}-${con.id_a}`
+    const claveB = `${con.tipo_b}-${con.id_b}`
+    const pa = obtenerPosicion(claveA)
+    const pb = obtenerPosicion(claveB)
     if (!pa || !pb) continue
+
+    const claveOtroExtremo = claveA === focoClave ? claveB : claveA
 
     const grupo = document.createElementNS(NS, 'g')
     grupo.setAttribute('class', 'lazo')
+    if (onClickOtroExtremo) {
+      grupo.style.cursor = 'pointer'
+      grupo.addEventListener('click', (e) => {
+        e.stopPropagation()
+        onClickOtroExtremo(claveOtroExtremo)
+      })
+    }
 
     const trazo = document.createElementNS(NS, 'path')
     trazo.setAttribute('d', pathSerpenteante(pa.x, pa.y, pb.x, pb.y))

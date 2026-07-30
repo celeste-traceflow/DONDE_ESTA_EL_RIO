@@ -10,6 +10,15 @@ const AVANCE_RATIO = 0.8
 
 const CLAVE_POSICIONES = 'rio-cauce-posiciones'
 
+function iconoConexionesSvg() {
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="18" height="18">
+      <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M22.68,43.69c21.86-21.86,32.79,21.86,54.65,0"/>
+      <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M22.68,56.31c21.86-21.86,32.79,21.86,54.65,0"/>
+    </svg>
+  `
+}
+
 function cargarPosicionesGuardadas() {
   try {
     return JSON.parse(localStorage.getItem(CLAVE_POSICIONES) || '{}')
@@ -58,6 +67,7 @@ export function renderCauce(container, { recuerdos, citas }) {
       <button type="button" data-accion="zoom-out" title="Alejar">–</button>
       <button type="button" data-accion="centrar" title="Centrar vista">◎</button>
       <button type="button" data-accion="ver-todo" title="Ver todo">⛶</button>
+      <button type="button" data-accion="conexiones" class="boton-modo-conexiones" title="Modo conexiones">${iconoConexionesSvg()}</button>
       <button type="button" data-accion="exportar" title="Exportar diseño (temporal)">⬇</button>
     </div>
   `
@@ -73,6 +83,7 @@ export function renderCauce(container, { recuerdos, citas }) {
 
   const pill = container.querySelector('.cauce-pill')
   const navEspacial = container.querySelector('.cauce-nav-espacial')
+  const botonModoConexiones = container.querySelector('.boton-modo-conexiones')
 
   function posicionDeTarjeta(clave) {
     const [tipo, id] = clave.split('-')
@@ -83,6 +94,7 @@ export function renderCauce(container, { recuerdos, citas }) {
 
   let conexionesCache = []
   let tarjetaConexionesVisibles = null
+  let modoConexiones = false
 
   function refrescarLazos() {
     const visibles = tarjetaConexionesVisibles
@@ -92,7 +104,9 @@ export function renderCauce(container, { recuerdos, citas }) {
             `${c.tipo_b}-${c.id_b}` === tarjetaConexionesVisibles
         )
       : []
-    dibujarLazos(capaLazos, visibles, posicionDeTarjeta)
+    dibujarLazos(capaLazos, visibles, posicionDeTarjeta, tarjetaConexionesVisibles, (claveOtroExtremo) => {
+      irA(claveOtroExtremo)
+    })
   }
 
   obtenerConexiones()
@@ -102,10 +116,7 @@ export function renderCauce(container, { recuerdos, citas }) {
     })
     .catch((err) => console.error('[conexiones] error cargando', err))
 
-  const inicial = calcularVistaInicial(viewport, layout)
-  const controles = activarPanZoom(viewport, mundo, inicial, layout, (tarjetaEl) => {
-    if (tarjetaEl.dataset.tipo !== 'recuerdo') return
-    const data = porClave.get(`${tarjetaEl.dataset.tipo}-${tarjetaEl.dataset.id}`)
+  function abrirRecuerdoCentrado(data) {
     const indiceInicial = secuenciaRecuerdos.indexOf(data)
     viewport.classList.add('enfocado-atras')
     pill.classList.add('enfocado-atras')
@@ -116,13 +127,45 @@ export function renderCauce(container, { recuerdos, citas }) {
         pill.classList.remove('enfocado-atras')
         navEspacial.classList.remove('enfocado-atras')
       },
-      onToggleConexiones: (r) => {
-        const clave = `recuerdo-${r.id}`
+    })
+  }
+
+  // Navega hacia el otro extremo de una conexión: si es un recuerdo, abre su
+  // tarjeta centrada; si es una cita (no tiene vista centrada), solo centra
+  // la cámara ahí.
+  function irA(clave) {
+    const data = porClave.get(clave)
+    if (!data) return
+    if (clave.startsWith('recuerdo-')) {
+      tarjetaConexionesVisibles = clave
+      refrescarLazos()
+      abrirRecuerdoCentrado(data)
+      return
+    }
+    const pos = posicionDeTarjeta(clave)
+    if (!pos) return
+    const rect = viewport.getBoundingClientRect()
+    controles.centrarEn(pos.x, pos.y, rect.width / 2, rect.height / 2)
+  }
+
+  const inicial = calcularVistaInicial(viewport, layout)
+  const controles = activarPanZoom(
+    viewport,
+    mundo,
+    inicial,
+    layout,
+    (tarjetaEl) => {
+      const clave = `${tarjetaEl.dataset.tipo}-${tarjetaEl.dataset.id}`
+      if (modoConexiones) {
         tarjetaConexionesVisibles = tarjetaConexionesVisibles === clave ? null : clave
         refrescarLazos()
-      },
-    })
-  })
+        return
+      }
+      if (tarjetaEl.dataset.tipo !== 'recuerdo') return
+      abrirRecuerdoCentrado(porClave.get(clave))
+    },
+    () => refrescarLazos()
+  )
 
   container.querySelector('.cauce-nav-espacial').addEventListener('click', (e) => {
     const accion = e.target.closest('button')?.dataset.accion
@@ -132,6 +175,14 @@ export function renderCauce(container, { recuerdos, citas }) {
     if (accion === 'centrar') controles.centrar()
     if (accion === 'ver-todo') controles.verTodo()
     if (accion === 'exportar') exportarDiseno()
+    if (accion === 'conexiones') {
+      modoConexiones = !modoConexiones
+      botonModoConexiones.classList.toggle('activo', modoConexiones)
+      if (!modoConexiones) {
+        tarjetaConexionesVisibles = null
+        refrescarLazos()
+      }
+    }
   })
 
   // Corre en segundo plano: no bloquea el Cauce, que ya se ve con los datos
@@ -313,7 +364,7 @@ function calcularVistaCompleta(viewport, layout) {
   }
 }
 
-function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta) {
+function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArrastrarTarjeta) {
   let { x, y, scale } = inicial
   let arrastrandoMundo = false
   let tarjetaArrastrada = null
@@ -382,6 +433,7 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta) {
       tarjetaArrastrada.style.top = `${tarjetaY}px`
       lastX = e.clientX
       lastY = e.clientY
+      onArrastrarTarjeta?.()
       return
     }
 
@@ -435,6 +487,11 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta) {
     },
     verTodo() {
       ;({ x, y, scale } = calcularVistaCompleta(viewport, layout))
+      aplicar()
+    },
+    centrarEn(worldX, worldY, cursorX, cursorY) {
+      x = cursorX - worldX * scale
+      y = cursorY - worldY * scale
       aplicar()
     },
   }
