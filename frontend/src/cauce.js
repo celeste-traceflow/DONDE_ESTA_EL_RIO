@@ -2,9 +2,33 @@
 // 0.8 = cada tarjeta nueva se solapa ~20% con la anterior (se ve la mayor parte de cada una).
 const AVANCE_RATIO = 0.8
 
+const CLAVE_POSICIONES = 'rio-cauce-posiciones'
+
+function cargarPosicionesGuardadas() {
+  try {
+    return JSON.parse(localStorage.getItem(CLAVE_POSICIONES) || '{}')
+  } catch {
+    return {}
+  }
+}
+
+function guardarPosicion(tipo, id, x, y) {
+  const posiciones = cargarPosicionesGuardadas()
+  posiciones[`${tipo}-${id}`] = { x, y }
+  localStorage.setItem(CLAVE_POSICIONES, JSON.stringify(posiciones))
+}
+
+function aplicarPosicionesGuardadas(layout) {
+  const guardadas = cargarPosicionesGuardadas()
+  return layout.map((item) => {
+    const guardada = guardadas[`${item.tipo}-${item.data.id}`]
+    return guardada ? { ...item, x: guardada.x, y: guardada.y } : item
+  })
+}
+
 export function renderCauce(container, { recuerdos, citas }) {
   const items = intercalarCitas(recuerdos, citas)
-  const layout = ubicarEnCascada(items)
+  const layout = aplicarPosicionesGuardadas(ubicarEnCascada(items))
 
   container.innerHTML = `
     <div class="cauce-viewport">
@@ -122,6 +146,8 @@ function ubicarEnCascada(items) {
 function crearTarjeta(item) {
   const el = document.createElement('div')
   el.className = `tarjeta tarjeta-${item.tipo}`
+  el.dataset.tipo = item.tipo
+  el.dataset.id = item.data.id
   el.style.left = `${item.x}px`
   el.style.top = `${item.y}px`
   el.style.width = `${item.ancho}px`
@@ -251,6 +277,7 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
 
   window.addEventListener('mouseup', () => {
     if (tarjetaArrastrada) {
+      guardarPosicion(tarjetaArrastrada.dataset.tipo, tarjetaArrastrada.dataset.id, tarjetaX, tarjetaY)
       tarjetaArrastrada.classList.remove('arrastrando')
       tarjetaArrastrada = null
     }
