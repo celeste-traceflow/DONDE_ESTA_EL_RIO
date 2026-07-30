@@ -120,29 +120,27 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       <button type="button" class="tc-flecha tc-flecha-izq" title="Recuerdo anterior">${svg(ICONO_FLECHA_IZQ, 22)}</button>
 
       <div class="tc-contenido">
+        <div class="tc-tags">
+          <div class="tc-tags-header">
+            <span>Tags algorítmicas</span>
+            <span class="tc-tags-controles">
+              <button type="button" title="Editar (próximamente)">✎</button>
+              <button type="button" title="Exportar (próximamente)">⊞</button>
+              <button type="button" data-accion="cerrar" title="Cerrar">✕</button>
+            </span>
+          </div>
+          <table>
+            ${filas.map((f) => `<tr><th>${f.categoria}</th><td>${escaparHtml(f.valor)}</td></tr>`).join('')}
+          </table>
+        </div>
+
         <div class="tc-foto foto-marco">
           <img src="/images/${encodeURIComponent(recuerdo.archivo)}" alt="">
         </div>
 
-        <div class="tc-detalle">
-          <div class="tc-tags">
-            <div class="tc-tags-header">
-              <span>Tags algorítmicas</span>
-              <span class="tc-tags-controles">
-                <button type="button" title="Editar (próximamente)">✎</button>
-                <button type="button" title="Exportar (próximamente)">⊞</button>
-                <button type="button" data-accion="cerrar" title="Cerrar">✕</button>
-              </span>
-            </div>
-            <table>
-              ${filas.map((f) => `<tr><th>${f.categoria}</th><td>${escaparHtml(f.valor)}</td></tr>`).join('')}
-            </table>
-          </div>
-
-          <div class="tc-recuerdo">
-            <p>${escaparHtml(recuerdo.recuerdo_afectivo)}</p>
-            <span class="marca-coordenada">${escaparHtml(recuerdo.lugar_y_fecha)}</span>
-          </div>
+        <div class="tc-recuerdo">
+          <p>${escaparHtml(recuerdo.recuerdo_afectivo)}</p>
+          <span class="marca-coordenada">${escaparHtml(recuerdo.lugar_y_fecha)}</span>
         </div>
       </div>
 

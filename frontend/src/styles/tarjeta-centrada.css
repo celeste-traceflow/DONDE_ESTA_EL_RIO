@@ -9,18 +9,9 @@
 
 .tc-contenido {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1.2rem;
-  max-width: 92vw;
-  max-height: 92vh;
-  justify-content: center;
-}
-
-.tc-detalle {
-  display: flex;
-  align-items: flex-start;
   gap: 1.5rem;
+  max-width: 92vw;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -62,16 +53,43 @@
 .tc-foto img {
   display: block;
   max-width: 34vw;
-  max-height: 48vh;
+  max-height: 70vh;
   width: auto;
   height: auto;
 }
 
 .tc-recuerdo {
+  align-self: flex-start;
   background: #fff;
   padding: 1.5rem;
   max-width: 260px;
   box-shadow: 0 8px 24px rgba(43, 38, 32, 0.3);
+  animation: tc-emerger-der 0.5s ease-out both;
+  animation-delay: 0.06s;
+}
+
+/* Efecto de "desprendimiento": las tarjetas de recuerdo y tags parecen salir
+   de atrás/abajo de la foto en vez de aparecer ya fijas en su lugar. */
+@keyframes tc-emerger-izq {
+  from {
+    opacity: 0;
+    transform: translate(70px, 30px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes tc-emerger-der {
+  from {
+    opacity: 0;
+    transform: translate(-70px, 30px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
 }
 
 .tc-recuerdo p {
@@ -89,10 +107,12 @@
 }
 
 .tc-tags {
+  align-self: flex-end;
   background: #ece9e3;
   color: var(--color-tinta);
   max-width: 320px;
   box-shadow: 0 8px 24px rgba(43, 38, 32, 0.3);
+  animation: tc-emerger-izq 0.5s ease-out both;
 }
 
 .tc-tags-header {
