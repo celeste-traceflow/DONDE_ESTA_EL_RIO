@@ -3,7 +3,7 @@
   inset: 0;
   overflow: hidden;
   cursor: grab;
-  background: var(--color-papel);
+  background: var(--color-rio-5);
 }
 
 .cauce-viewport.arrastrando {
