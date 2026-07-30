@@ -16,6 +16,34 @@
   justify-content: center;
 }
 
+.tc-flecha {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--color-tinta);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2001;
+}
+
+.tc-flecha:hover {
+  opacity: 0.85;
+}
+
+.tc-flecha-izq {
+  left: 2rem;
+}
+
+.tc-flecha-der {
+  right: 2rem;
+}
+
 .tc-foto {
   background: #fff;
   padding: 10px;

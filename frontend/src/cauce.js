@@ -39,6 +39,7 @@ export function renderCauce(container, { recuerdos, citas }) {
   const items = intercalarCitas(recuerdos, citas)
   const layout = aplicarPosicionesGuardadas(ubicarEnCascada(items))
   const porClave = new Map(layout.map((item) => [`${item.tipo}-${item.data.id}`, item.data]))
+  const secuenciaRecuerdos = layout.filter((item) => item.tipo === 'recuerdo').map((item) => item.data)
 
   container.innerHTML = `
     <div class="cauce-viewport">
@@ -71,10 +72,11 @@ export function renderCauce(container, { recuerdos, citas }) {
   const controles = activarPanZoom(viewport, mundo, inicial, layout, (tarjetaEl) => {
     if (tarjetaEl.dataset.tipo !== 'recuerdo') return
     const data = porClave.get(`${tarjetaEl.dataset.tipo}-${tarjetaEl.dataset.id}`)
+    const indiceInicial = secuenciaRecuerdos.indexOf(data)
     viewport.classList.add('enfocado-atras')
     pill.classList.add('enfocado-atras')
     navEspacial.classList.add('enfocado-atras')
-    abrirTarjetaCentrada(data, {
+    abrirTarjetaCentrada(secuenciaRecuerdos, indiceInicial, {
       onCerrar: () => {
         viewport.classList.remove('enfocado-atras')
         pill.classList.remove('enfocado-atras')
