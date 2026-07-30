@@ -49,6 +49,7 @@ export function renderCauce(container, { recuerdos, citas }) {
       <button type="button" data-accion="zoom-out" title="Alejar">–</button>
       <button type="button" data-accion="centrar" title="Centrar vista">◎</button>
       <button type="button" data-accion="ver-todo" title="Ver todo">⛶</button>
+      <button type="button" data-accion="exportar" title="Exportar diseño (temporal)">⬇</button>
     </div>
   `
   const viewport = container.querySelector('.cauce-viewport')
@@ -68,7 +69,19 @@ export function renderCauce(container, { recuerdos, citas }) {
     if (accion === 'zoom-out') controles.zoom(0.8)
     if (accion === 'centrar') controles.centrar()
     if (accion === 'ver-todo') controles.verTodo()
+    if (accion === 'exportar') exportarDiseno()
   })
+}
+
+function exportarDiseno() {
+  const datos = localStorage.getItem(CLAVE_POSICIONES) || '{}'
+  const blob = new Blob([datos], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'posiciones-cauce.json'
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 function intercalarCitas(recuerdos, citas) {
