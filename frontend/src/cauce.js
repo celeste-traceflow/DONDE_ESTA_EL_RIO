@@ -1,3 +1,5 @@
+import layoutInicial from './layout-inicial.json'
+
 // Qué fracción del ancho/alto de una tarjeta avanza el cursor de la cascada en cada paso.
 // 0.8 = cada tarjeta nueva se solapa ~20% con la anterior (se ve la mayor parte de cada una).
 const AVANCE_RATIO = 0.8
@@ -23,9 +25,10 @@ function guardarEstado(tarjeta) {
 }
 
 function aplicarPosicionesGuardadas(layout) {
-  const guardadas = cargarPosicionesGuardadas()
+  const guardadasLocal = cargarPosicionesGuardadas()
   return layout.map((item) => {
-    const guardada = guardadas[`${item.tipo}-${item.data.id}`]
+    const clave = `${item.tipo}-${item.data.id}`
+    const guardada = guardadasLocal[clave] || layoutInicial[clave]
     if (!guardada) return item
     return { ...item, x: guardada.x, y: guardada.y, ancho: guardada.ancho ?? item.ancho }
   })
