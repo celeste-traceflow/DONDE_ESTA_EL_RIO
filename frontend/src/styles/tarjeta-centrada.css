@@ -134,6 +134,38 @@
   color: var(--color-tinta);
 }
 
+.tc-tags-guia {
+  font-family: var(--font-intima);
+  font-style: italic;
+  font-size: 0.6rem;
+  line-height: 1.35;
+  margin: 0;
+  padding: 0.5rem 0.6rem 0;
+  opacity: 0.75;
+}
+
+.tag-palabra {
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.tag-palabra:hover {
+  background: rgba(43, 38, 32, 0.1);
+}
+
+.tag-palabra.tag-subrayado {
+  text-decoration: underline;
+  text-decoration-color: var(--color-acento);
+  text-decoration-thickness: 2px;
+}
+
+.tag-palabra.tag-tachado {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-acento);
+  text-decoration-thickness: 2px;
+  opacity: 0.5;
+}
+
 .tc-tags table {
   width: 100%;
   border-collapse: collapse;

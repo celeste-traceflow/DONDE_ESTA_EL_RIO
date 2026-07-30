@@ -1,3 +1,5 @@
+import { obtenerTagsEstado, guardarTagEstado } from './api.js'
+
 const CATEGORIAS_TAGS = [
   'MEDIO',
   'OBJETOS',
@@ -26,6 +28,26 @@ function escaparHtml(str) {
   const div = document.createElement('div')
   div.textContent = str
   return div.innerHTML
+}
+
+// Cada tag se muestra como una lista separada por comas; cada elemento de esa
+// lista es la unidad clickeable para subrayar/tachar (no palabra por palabra
+// suelta, ya que muchos tags son frases cortas como "marco de puerta").
+function renderizarValor(valor) {
+  if (valor === '—') return valor
+  return valor
+    .split(',')
+    .map((seg) => seg.trim())
+    .filter(Boolean)
+    .map((seg) => `<span class="tag-palabra" data-palabra="${escaparHtml(seg)}">${escaparHtml(seg)}</span>`)
+    .join(', ')
+}
+
+function aplicarEstadoPalabra(span, estado) {
+  span.classList.remove('tag-subrayado', 'tag-tachado')
+  if (estado === 'subrayado') span.classList.add('tag-subrayado')
+  if (estado === 'tachado') span.classList.add('tag-tachado')
+  span.dataset.estado = estado || 'ninguno'
 }
 
 const ICONO_CONEXIONES = `
@@ -129,8 +151,9 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
               <button type="button" data-accion="cerrar" title="Cerrar">✕</button>
             </span>
           </div>
+          <p class="tc-tags-guia">¿Alguna de estas palabras te resuena o te hace ruido hoy? Subrayá o tachá la que creas necesaria.</p>
           <table>
-            ${filas.map((f) => `<tr><th>${f.categoria}</th><td>${escaparHtml(f.valor)}</td></tr>`).join('')}
+            ${filas.map((f) => `<tr><th>${f.categoria}</th><td>${renderizarValor(f.valor)}</td></tr>`).join('')}
           </table>
         </div>
 
@@ -165,6 +188,24 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
     overlay.querySelector('.tc-flecha-der').addEventListener('click', (e) => {
       e.stopPropagation()
       irA(indice + 1)
+    })
+
+    const tablaTagsEl = overlay.querySelector('.tc-tags table')
+    tablaTagsEl.addEventListener('click', (e) => {
+      const span = e.target.closest('.tag-palabra')
+      if (!span) return
+      const actual = span.dataset.estado || 'ninguno'
+      const siguiente =
+        actual === 'ninguno' ? 'subrayado' : actual === 'subrayado' ? 'tachado' : 'ninguno'
+      aplicarEstadoPalabra(span, siguiente)
+      guardarTagEstado(recuerdo.id, span.dataset.palabra, siguiente === 'ninguno' ? null : siguiente)
+    })
+
+    obtenerTagsEstado(recuerdo.id).then((estados) => {
+      tablaTagsEl.querySelectorAll('.tag-palabra').forEach((span) => {
+        const estado = estados[span.dataset.palabra]
+        if (estado) aplicarEstadoPalabra(span, estado)
+      })
     })
 
     const recuerdoEl = overlay.querySelector('.tc-recuerdo')
