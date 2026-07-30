@@ -133,9 +133,9 @@
 .modo-boton {
   background: var(--color-tinta);
   border: none;
-  border-radius: 4px;
-  width: 1.5rem;
-  height: 1.5rem;
+  border-radius: 5px;
+  width: 2.4rem;
+  height: 2.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -143,8 +143,8 @@
 }
 
 .modo-boton svg {
-  width: 60%;
-  height: 60%;
+  width: 70%;
+  height: 70%;
 }
 
 .modo-boton.activo {

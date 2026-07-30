@@ -31,16 +31,23 @@ function escaparHtml(str) {
   return div.innerHTML
 }
 
-// Cada tag se muestra como una lista separada por comas; cada elemento de esa
-// lista es la unidad clickeable para subrayar/tachar (no palabra por palabra
-// suelta, ya que muchos tags son frases cortas como "marco de puerta").
+// Cada tag se muestra como una lista separada por comas; dentro de cada
+// elemento, cada palabra suelta es su propia unidad clickeable para
+// subrayar/tachar (ej. "marco de puerta" → "marco", "de" y "puerta" por
+// separado).
 function renderizarValor(valor) {
   if (valor === '—') return valor
   return valor
     .split(',')
     .map((seg) => seg.trim())
     .filter(Boolean)
-    .map((seg) => `<span class="tag-palabra" data-palabra="${escaparHtml(seg)}">${escaparHtml(seg)}</span>`)
+    .map((seg) =>
+      seg
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((palabra) => `<span class="tag-palabra" data-palabra="${escaparHtml(palabra)}">${escaparHtml(palabra)}</span>`)
+        .join(' ')
+    )
     .join(', ')
 }
 
