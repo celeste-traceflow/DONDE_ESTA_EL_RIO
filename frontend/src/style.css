@@ -1,27 +1,12 @@
-body {
+@import './styles/tokens.css';
+@import './styles/cauce.css';
+
+html, body {
   margin: 0;
-  padding: 2rem;
-  background: #1a1a1a;
-  color: #e6e6e6;
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  height: 100%;
+  font-family: var(--font-maquina);
 }
 
-h1 {
-  font-size: 1.1rem;
-  color: #f2a65a;
-}
-
-#log {
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.ok {
-  color: #7fd88f;
-}
-
-.warn {
-  color: #f2a65a;
+#app {
+  height: 100%;
 }

@@ -1,0 +1,72 @@
+.cauce-viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  background: var(--color-papel);
+}
+
+.cauce-viewport.arrastrando {
+  cursor: grabbing;
+}
+
+.cauce-mundo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.tarjeta {
+  position: absolute;
+  user-select: none;
+}
+
+.tarjeta-recuerdo .foto-marco {
+  background: #fff;
+  padding: 10px 10px 0.6rem;
+  border-radius: 2px;
+  box-shadow: 0 3px 10px rgba(43, 38, 32, 0.25);
+}
+
+.tarjeta-recuerdo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+.tarjeta-recuerdo .recuerdo-texto {
+  font-family: var(--font-intima);
+  font-style: italic;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  margin: 0.4rem 0 0.3rem;
+  color: var(--color-tinta);
+}
+
+.tarjeta-recuerdo .marca-coordenada {
+  font-size: 0.6rem;
+}
+
+.tarjeta-cita {
+  background: var(--color-acento);
+  color: var(--color-tinta);
+  padding: 1rem 1.1rem;
+  border-radius: 4px;
+  box-shadow: 0 3px 10px rgba(43, 38, 32, 0.2);
+}
+
+.tarjeta-cita blockquote {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-autorial);
+  font-weight: 600;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.tarjeta-cita .autor {
+  font-family: var(--font-maquina);
+  font-size: 0.65rem;
+}

@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  /* Paleta de color — ver lineamientos_diseno_donde-esta-el-rio.md */
+  --color-papel: #EDE5D3;
+  --color-tinta: #2B2620;
+  --color-acento: #E7744C;
+  --color-postit-gris: #C9C2B4;
+  --color-postit-beige: #E3D9C4;
+
+  /* En revisión: acento "voz algorítmica" de la tabla de tags. Por ahora sin uso (tabla neutra/gris). */
+  --color-indigo: #4A4E9E;
+
+  /* Paleta ampliada del río — fondos opcionales para tarjetas de paisaje/naturaleza */
+  --color-rio-1: #1a2826;
+  --color-rio-2: #27372f;
+  --color-rio-3: #294337;
+  --color-rio-4: #354c3e;
+  --color-rio-5: #44483b;
+  --color-rio-6: #6c6654;
+  --color-rio-7: #908777;
+
+  /* Tipografía — tres voces, no se combinan en una misma línea de texto */
+  --font-autorial: "Bricolage Grotesque", sans-serif;   /* explicaciones del proyecto, citas teóricas */
+  --font-intima: "Fraunces", serif;                     /* recuerdo escrito, título principal, frase fija */
+  --font-maquina: "Space Mono", monospace;               /* tags, metadata, UI operativa */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-papel);
+  color: var(--color-tinta);
+}
+
+/* Marca de coordenada — fecha/lugar. Punto naranja + texto en tinta, nunca el texto completo en color. */
+.marca-coordenada {
+  font-family: var(--font-maquina);
+  color: var(--color-tinta);
+}
+
+.marca-coordenada::before {
+  content: "●";
+  color: var(--color-acento);
+  margin-right: 0.4em;
+  font-size: 0.65em;
+  vertical-align: middle;
+}
