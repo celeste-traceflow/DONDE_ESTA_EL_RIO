@@ -59,6 +59,7 @@
 }
 
 .tc-recuerdo {
+  align-self: flex-start;
   background: #fff;
   padding: 1.5rem;
   max-width: 260px;
@@ -80,6 +81,7 @@
 }
 
 .tc-tags {
+  align-self: flex-end;
   background: #ece9e3;
   color: var(--color-tinta);
   max-width: 320px;
