@@ -1,5 +1,6 @@
 @import './styles/tokens.css';
 @import './styles/cauce.css';
+@import './styles/tarjeta-centrada.css';
 
 html, body {
   margin: 0;

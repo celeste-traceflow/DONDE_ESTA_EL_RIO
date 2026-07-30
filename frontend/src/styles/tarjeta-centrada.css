@@ -1,0 +1,114 @@
+.tarjeta-centrada-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tc-contenido {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 92vw;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tc-foto {
+  background: #fff;
+  padding: 10px;
+  box-shadow: 0 8px 24px rgba(43, 38, 32, 0.3);
+}
+
+.tc-foto img {
+  display: block;
+  max-width: 34vw;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+}
+
+.tc-recuerdo {
+  background: #fff;
+  padding: 1.5rem;
+  max-width: 260px;
+  box-shadow: 0 8px 24px rgba(43, 38, 32, 0.3);
+}
+
+.tc-recuerdo p {
+  font-family: var(--font-intima);
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 0.8rem;
+  color: var(--color-tinta);
+}
+
+.tc-tags {
+  background: #ece9e3;
+  color: var(--color-tinta);
+  max-width: 280px;
+  box-shadow: 0 8px 24px rgba(43, 38, 32, 0.3);
+}
+
+.tc-tags-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.8rem;
+  font-family: var(--font-maquina);
+  font-size: 0.75rem;
+  border-bottom: 1px solid rgba(43, 38, 32, 0.15);
+}
+
+.tc-tags-controles button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-left: 0.4rem;
+  color: var(--color-tinta);
+}
+
+.tc-tags table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-maquina);
+  font-size: 0.68rem;
+}
+
+.tc-tags th,
+.tc-tags td {
+  text-align: left;
+  padding: 0.4rem 0.7rem;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(43, 38, 32, 0.1);
+}
+
+.tc-tags th {
+  font-weight: 700;
+  white-space: nowrap;
+  width: 30%;
+}
+
+.tc-menu-operativo {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 2001;
+}
+
+.tc-menu-operativo button {
+  background: var(--color-tinta);
+  color: var(--color-papel);
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  font-family: var(--font-maquina);
+  cursor: pointer;
+}

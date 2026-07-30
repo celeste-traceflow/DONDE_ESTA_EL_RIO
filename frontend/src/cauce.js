@@ -1,4 +1,5 @@
 import layoutInicial from './layout-inicial.json'
+import { abrirTarjetaCentrada } from './tarjeta-centrada.js'
 
 // Qué fracción del ancho/alto de una tarjeta avanza el cursor de la cascada en cada paso.
 // 0.8 = cada tarjeta nueva se solapa ~20% con la anterior (se ve la mayor parte de cada una).
@@ -37,6 +38,7 @@ function aplicarPosicionesGuardadas(layout) {
 export function renderCauce(container, { recuerdos, citas }) {
   const items = intercalarCitas(recuerdos, citas)
   const layout = aplicarPosicionesGuardadas(ubicarEnCascada(items))
+  const porClave = new Map(layout.map((item) => [`${item.tipo}-${item.data.id}`, item.data]))
 
   container.innerHTML = `
     <div class="cauce-viewport">
@@ -62,8 +64,24 @@ export function renderCauce(container, { recuerdos, citas }) {
     mundo.appendChild(crearTarjeta(item))
   }
 
+  const pill = container.querySelector('.cauce-pill')
+  const navEspacial = container.querySelector('.cauce-nav-espacial')
+
   const inicial = calcularVistaInicial(viewport, layout)
-  const controles = activarPanZoom(viewport, mundo, inicial, layout)
+  const controles = activarPanZoom(viewport, mundo, inicial, layout, (tarjetaEl) => {
+    if (tarjetaEl.dataset.tipo !== 'recuerdo') return
+    const data = porClave.get(`${tarjetaEl.dataset.tipo}-${tarjetaEl.dataset.id}`)
+    viewport.classList.add('enfocado-atras')
+    pill.classList.add('enfocado-atras')
+    navEspacial.classList.add('enfocado-atras')
+    abrirTarjetaCentrada(data, {
+      onCerrar: () => {
+        viewport.classList.remove('enfocado-atras')
+        pill.classList.remove('enfocado-atras')
+        navEspacial.classList.remove('enfocado-atras')
+      },
+    })
+  })
 
   container.querySelector('.cauce-nav-espacial').addEventListener('click', (e) => {
     const accion = e.target.closest('button')?.dataset.accion
@@ -247,7 +265,7 @@ function calcularVistaCompleta(viewport, layout) {
   }
 }
 
-function activarPanZoom(viewport, mundo, inicial, layout) {
+function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta) {
   let { x, y, scale } = inicial
   let arrastrandoMundo = false
   let tarjetaArrastrada = null
@@ -256,6 +274,7 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
   let tarjetaRedimensionada = null
   let anchoRedimensionado = 0
   let signoRedimension = 1
+  let distanciaMovida = 0
   let lastX = 0
   let lastY = 0
 
@@ -275,6 +294,7 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
   viewport.addEventListener('mousedown', (e) => {
     lastX = e.clientX
     lastY = e.clientY
+    distanciaMovida = 0
 
     const tirador = e.target.closest('.resize-handle')
     if (tirador) {
@@ -307,6 +327,7 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
     }
 
     if (tarjetaArrastrada) {
+      distanciaMovida += Math.abs(e.clientX - lastX) + Math.abs(e.clientY - lastY)
       tarjetaX += (e.clientX - lastX) / scale
       tarjetaY += (e.clientY - lastY) / scale
       tarjetaArrastrada.style.left = `${tarjetaX}px`
@@ -330,7 +351,11 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
       tarjetaRedimensionada = null
     }
     if (tarjetaArrastrada) {
-      guardarEstado(tarjetaArrastrada)
+      if (distanciaMovida < 4) {
+        onClickTarjeta?.(tarjetaArrastrada)
+      } else {
+        guardarEstado(tarjetaArrastrada)
+      }
       tarjetaArrastrada.classList.remove('arrastrando')
       tarjetaArrastrada = null
     }

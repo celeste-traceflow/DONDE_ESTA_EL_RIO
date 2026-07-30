@@ -10,6 +10,20 @@
   cursor: grabbing;
 }
 
+.cauce-viewport.enfocado-atras {
+  filter: blur(6px) brightness(1.08);
+  pointer-events: none;
+  transition: filter 0.2s ease;
+}
+
+.cauce-pill.enfocado-atras,
+.cauce-nav-espacial.enfocado-atras {
+  opacity: 0.15;
+  filter: blur(3px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
 .cauce-mundo {
   position: absolute;
   top: 0;
