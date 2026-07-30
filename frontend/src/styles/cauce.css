@@ -55,8 +55,8 @@
 
 .lazo-fecha {
   font-family: var(--font-maquina);
-  font-size: 11px;
-  fill: var(--color-tinta);
+  font-size: 6px;
+  fill: #fff;
   opacity: 0.8;
 }
 

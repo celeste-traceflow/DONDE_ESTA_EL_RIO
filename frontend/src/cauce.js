@@ -129,22 +129,22 @@ export function renderCauce(container, { recuerdos, citas }) {
     })
   }
 
-  // Navega hacia el otro extremo de una conexión: si es un recuerdo, abre su
-  // tarjeta centrada; si es una cita (no tiene vista centrada), solo centra
-  // la cámara ahí.
+  // Navega hacia el otro extremo de una conexión: la cámara acompaña con un
+  // paneo animado hasta la tarjeta destino y recién ahí, si es un recuerdo,
+  // se abre su tarjeta centrada (si es una cita, solo queda centrada ahí).
   function irA(clave) {
     const data = porClave.get(clave)
     if (!data) return
-    if (clave.startsWith('recuerdo-')) {
-      tarjetaConexionesVisibles = clave
-      refrescarLazos()
-      abrirRecuerdoCentrado(data)
-      return
-    }
     const pos = posicionDeTarjeta(clave)
     if (!pos) return
     const rect = viewport.getBoundingClientRect()
-    controles.centrarEn(pos.x, pos.y, rect.width / 2, rect.height / 2)
+    controles.centrarEnAnimado(pos.x, pos.y, rect.width / 2, rect.height / 2).then(() => {
+      if (clave.startsWith('recuerdo-')) {
+        tarjetaConexionesVisibles = clave
+        refrescarLazos()
+        abrirRecuerdoCentrado(data)
+      }
+    })
   }
 
   const inicial = calcularVistaInicial(viewport, layout)
@@ -368,6 +368,27 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
     mundo.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
   }
 
+  let animacionToken = 0
+  function animarCamara(targetX, targetY, duracion = 650) {
+    const miToken = ++animacionToken
+    const inicioX = x
+    const inicioY = y
+    const t0 = performance.now()
+    return new Promise((resolve) => {
+      function paso(t) {
+        if (miToken !== animacionToken) return resolve()
+        const p = Math.min(1, (t - t0) / duracion)
+        const ease = 1 - Math.pow(1 - p, 3)
+        x = inicioX + (targetX - inicioX) * ease
+        y = inicioY + (targetY - inicioY) * ease
+        aplicar()
+        if (p < 1) requestAnimationFrame(paso)
+        else resolve()
+      }
+      requestAnimationFrame(paso)
+    })
+  }
+
   function zoomHacia(cursorX, cursorY, factor) {
     const worldX = (cursorX - x) / scale
     const worldY = (cursorY - y) / scale
@@ -480,6 +501,11 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
       x = cursorX - worldX * scale
       y = cursorY - worldY * scale
       aplicar()
+    },
+    centrarEnAnimado(worldX, worldY, cursorX, cursorY) {
+      const targetX = cursorX - worldX * scale
+      const targetY = cursorY - worldY * scale
+      return animarCamara(targetX, targetY)
     },
   }
 }
