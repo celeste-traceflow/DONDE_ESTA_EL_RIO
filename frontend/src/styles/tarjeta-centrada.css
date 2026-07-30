@@ -229,6 +229,13 @@
   cursor: pointer;
 }
 
+.tc-menu-operativo button.activo {
+  background: var(--color-acento);
+  border-radius: 6px;
+  padding: 0.15rem;
+  margin: -0.15rem;
+}
+
 .tc-menu-separador {
   width: 1px;
   height: 1.2rem;

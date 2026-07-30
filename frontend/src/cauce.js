@@ -1,6 +1,8 @@
 import layoutInicial from './layout-inicial.json'
 import { abrirTarjetaCentrada } from './tarjeta-centrada.js'
 import { sincronizarEmbeddingsYConexiones } from './conexiones.js'
+import { obtenerConexiones } from './api.js'
+import { crearCapaLazos, dibujarLazos } from './lazos.js'
 
 // Qué fracción del ancho/alto de una tarjeta avanza el cursor de la cascada en cada paso.
 // 0.8 = cada tarjeta nueva se solapa ~20% con la anterior (se ve la mayor parte de cada una).
@@ -62,12 +64,43 @@ export function renderCauce(container, { recuerdos, citas }) {
   const viewport = container.querySelector('.cauce-viewport')
   const mundo = container.querySelector('.cauce-mundo')
 
+  const capaLazos = crearCapaLazos()
+  mundo.appendChild(capaLazos)
+
   for (const item of layout) {
     mundo.appendChild(crearTarjeta(item))
   }
 
   const pill = container.querySelector('.cauce-pill')
   const navEspacial = container.querySelector('.cauce-nav-espacial')
+
+  function posicionDeTarjeta(clave) {
+    const [tipo, id] = clave.split('-')
+    const el = mundo.querySelector(`[data-tipo="${tipo}"][data-id="${id}"]`)
+    if (!el) return null
+    return { x: parseFloat(el.style.left), y: parseFloat(el.style.top) }
+  }
+
+  let conexionesCache = []
+  let tarjetaConexionesVisibles = null
+
+  function refrescarLazos() {
+    const visibles = tarjetaConexionesVisibles
+      ? conexionesCache.filter(
+          (c) =>
+            `${c.tipo_a}-${c.id_a}` === tarjetaConexionesVisibles ||
+            `${c.tipo_b}-${c.id_b}` === tarjetaConexionesVisibles
+        )
+      : []
+    dibujarLazos(capaLazos, visibles, posicionDeTarjeta)
+  }
+
+  obtenerConexiones()
+    .then((c) => {
+      conexionesCache = c
+      refrescarLazos()
+    })
+    .catch((err) => console.error('[conexiones] error cargando', err))
 
   const inicial = calcularVistaInicial(viewport, layout)
   const controles = activarPanZoom(viewport, mundo, inicial, layout, (tarjetaEl) => {
@@ -82,6 +115,11 @@ export function renderCauce(container, { recuerdos, citas }) {
         viewport.classList.remove('enfocado-atras')
         pill.classList.remove('enfocado-atras')
         navEspacial.classList.remove('enfocado-atras')
+      },
+      onToggleConexiones: (r) => {
+        const clave = `recuerdo-${r.id}`
+        tarjetaConexionesVisibles = tarjetaConexionesVisibles === clave ? null : clave
+        refrescarLazos()
       },
     })
   })

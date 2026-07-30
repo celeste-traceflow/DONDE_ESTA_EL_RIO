@@ -24,6 +24,34 @@
   transition: opacity 0.2s ease, filter 0.2s ease;
 }
 
+.capa-lazos {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 100000;
+}
+
+.lazo-trazo {
+  fill: none;
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+  opacity: 0.55;
+}
+
+.lazo-punto {
+  fill: var(--color-tinta);
+  opacity: 0.8;
+}
+
+.lazo-fecha {
+  font-family: var(--font-maquina);
+  font-size: 11px;
+  fill: var(--color-tinta);
+  opacity: 0.8;
+}
+
 .cauce-mundo {
   position: absolute;
   top: 0;

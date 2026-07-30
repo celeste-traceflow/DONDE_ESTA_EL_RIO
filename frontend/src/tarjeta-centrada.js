@@ -139,7 +139,7 @@ function aplicarBordeEstampilla(el, radio = 7) {
   el.style.clipPath = `path('${pathEstampilla(w, h, radio)}')`
 }
 
-export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}) {
+export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar, onToggleConexiones } = {}) {
   let indice = indiceInicial
   let observadorRecuerdo = null
 
@@ -193,7 +193,7 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       <button type="button" class="tc-flecha tc-flecha-der" title="Recuerdo siguiente">${svg(ICONO_FLECHA_DER, 22)}</button>
 
       <div class="tc-menu-operativo">
-        <button type="button" title="Mostrar/ocultar conexiones (próximamente)">${svg(ICONO_CONEXIONES, 30)}</button>
+        <button type="button" class="boton-conexiones" title="Mostrar/ocultar conexiones">${svg(ICONO_CONEXIONES, 30)}</button>
         <span class="tc-menu-separador"></span>
         <button type="button" title="Nuevo post-it (próximamente)">${svg(ICONO_NUEVO_POSTIT, 30)}</button>
         <span class="tc-menu-separador"></span>
@@ -210,6 +210,11 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
     overlay.querySelector('.tc-flecha-der').addEventListener('click', (e) => {
       e.stopPropagation()
       irA(indice + 1)
+    })
+
+    overlay.querySelector('.boton-conexiones').addEventListener('click', (e) => {
+      e.currentTarget.classList.toggle('activo')
+      onToggleConexiones?.(recuerdo)
     })
 
     const tablaTagsEl = overlay.querySelector('.tc-tags table')
