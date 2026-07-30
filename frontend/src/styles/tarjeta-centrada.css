@@ -125,13 +125,30 @@
   border-bottom: 1px solid rgba(43, 38, 32, 0.15);
 }
 
-.tc-tags-controles button {
-  background: none;
+.tc-tags-controles {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.modo-boton {
+  background: var(--color-tinta);
   border: none;
+  border-radius: 4px;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-size: 0.7rem;
-  margin-left: 0.3rem;
-  color: var(--color-tinta);
+}
+
+.modo-boton svg {
+  width: 60%;
+  height: 60%;
+}
+
+.modo-boton.activo {
+  background: var(--color-acento);
 }
 
 .tc-tags-guia {

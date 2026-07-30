@@ -51,6 +51,22 @@ function aplicarEstadoPalabra(span, estado) {
   span.dataset.estado = estado || 'ninguno'
 }
 
+const ICONO_SUBRAYAR = `
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" d="M16.35,57.08c-1.5,1.5-2.6,3.36-3.18,5.4l-5.25,18.39c-.07.24-.11.5-.11.75h0c0,1.51,1.23,2.74,2.74,2.74h0c.25,0,.51-.04.75-.11l18.39-5.25c2.04-.58,3.9-1.68,5.4-3.18l46.05-46.05c1.06-1.06,1.66-2.5,1.66-4h0c0-1.5-.6-2.94-1.66-4l-10.75-10.75c-1.06-1.06-2.5-1.66-4-1.66h0c-1.5,0-2.94.6-4,1.66L16.35,57.08Z"/>
+  <line fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" x1="20.66" y1="81.59" x2="10.59" y2="71.53"/>
+  <line fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" x1="35.94" y1="75" x2="17.19" y2="56.25"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" d="M56.25,17.19l21.78,21.78c1.06,1.06,1.66,2.5,1.66,4h0c0,1.5-.6,2.94-1.66,4l-7.72,7.72"/>
+  <circle fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" cx="45.31" cy="46.87" r="1.56"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" d="M72.66,13.28l4.17-4.17c.83-.83,1.95-1.29,3.12-1.29h0c2.44,0,4.42,1.98,4.42,4.42h0c0,1.17-.47,2.3-1.29,3.12l-4.17,4.17"/>
+  <line fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" x1="92.19" y1="92.19" x2="31.25" y2="92.19"/>
+`
+
+const ICONO_TACHAR = `
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" d="M43.75,60.07v18.05c0,2.59-2.1,4.69-4.69,4.69h-6.25v9.37h34.37v-9.37h-6.25c-2.59,0-4.69-2.1-4.69-4.69v-18.05"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" d="M56.25,39.93v-19.62h18.75c2.59,0,4.69,2.1,4.69,4.69v4.69h9.37V7.81H10.94v21.87h9.37v-4.69c0-2.59,2.1-4.69,4.69-4.69h18.75v19.62"/>
+  <line fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" x1="6.21" y1="50" x2="93.79" y2="50"/>
+`
+
 const ICONO_CONEXIONES = `
   <path fill="none" stroke="#ede5d3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.17" d="M22.68,43.69c21.86-21.86,32.79,21.86,54.65,0"/>
   <path fill="none" stroke="#ede5d3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.17" d="M22.68,56.31c21.86-21.86,32.79,21.86,54.65,0"/>
@@ -147,9 +163,8 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
           <div class="tc-tags-header">
             <span>Tags algorítmicas</span>
             <span class="tc-tags-controles">
-              <button type="button" title="Editar (próximamente)">✎</button>
-              <button type="button" title="Exportar (próximamente)">⊞</button>
-              <button type="button" data-accion="cerrar" title="Cerrar">✕</button>
+              <button type="button" class="modo-boton" data-modo="subrayado" title="Subrayar">${svg(ICONO_SUBRAYAR, 20)}</button>
+              <button type="button" class="modo-boton" data-modo="tachado" title="Tachar">${svg(ICONO_TACHAR, 20)}</button>
             </span>
           </div>
           <p class="tc-tags-guia">¿Alguna de estas palabras te resuena o te hace ruido hoy? Subrayá o tachá la que creas necesaria.</p>
@@ -181,7 +196,6 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       </div>
     `
 
-    overlay.querySelector('[data-accion="cerrar"]').addEventListener('click', cerrar)
     overlay.querySelector('.tc-flecha-izq').addEventListener('click', (e) => {
       e.stopPropagation()
       irA(indice - 1)
@@ -193,13 +207,22 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
 
     const tablaTagsEl = overlay.querySelector('.tc-tags table')
     let estadoActual = {}
+    let modoActivo = null
+
+    const botonesModo = overlay.querySelectorAll('.modo-boton')
+    botonesModo.forEach((boton) => {
+      boton.addEventListener('click', () => {
+        const modo = boton.dataset.modo
+        modoActivo = modoActivo === modo ? null : modo
+        botonesModo.forEach((b) => b.classList.toggle('activo', b.dataset.modo === modoActivo))
+      })
+    })
 
     tablaTagsEl.addEventListener('click', (e) => {
       const span = e.target.closest('.tag-palabra')
-      if (!span) return
+      if (!span || !modoActivo) return
       const actual = span.dataset.estado || 'ninguno'
-      const siguiente =
-        actual === 'ninguno' ? 'subrayado' : actual === 'subrayado' ? 'tachado' : 'ninguno'
+      const siguiente = actual === modoActivo ? 'ninguno' : modoActivo
       aplicarEstadoPalabra(span, siguiente)
 
       const palabra = span.dataset.palabra
