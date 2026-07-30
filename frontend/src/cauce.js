@@ -190,10 +190,13 @@ function crearTarjeta(item) {
     `
   }
 
-  const tirador = document.createElement('div')
-  tirador.className = 'resize-handle'
-  tirador.title = 'Cambiar tamaño'
-  el.appendChild(tirador)
+  for (const esquina of ['tl', 'tr', 'bl', 'br']) {
+    const tirador = document.createElement('div')
+    tirador.className = `resize-handle resize-handle-${esquina}`
+    tirador.dataset.esquina = esquina
+    tirador.title = 'Cambiar tamaño'
+    el.appendChild(tirador)
+  }
 
   return el
 }
@@ -252,6 +255,7 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
   let tarjetaY = 0
   let tarjetaRedimensionada = null
   let anchoRedimensionado = 0
+  let signoRedimension = 1
   let lastX = 0
   let lastY = 0
 
@@ -276,6 +280,7 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
     if (tirador) {
       tarjetaRedimensionada = tirador.closest('.tarjeta')
       anchoRedimensionado = parseFloat(tarjetaRedimensionada.style.width)
+      signoRedimension = tirador.dataset.esquina.includes('l') ? -1 : 1
       return
     }
 
@@ -294,7 +299,7 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
 
   window.addEventListener('mousemove', (e) => {
     if (tarjetaRedimensionada) {
-      anchoRedimensionado = Math.max(60, anchoRedimensionado + (e.clientX - lastX) / scale)
+      anchoRedimensionado = Math.max(60, anchoRedimensionado + (signoRedimension * (e.clientX - lastX)) / scale)
       tarjetaRedimensionada.style.width = `${anchoRedimensionado}px`
       lastX = e.clientX
       lastY = e.clientY
