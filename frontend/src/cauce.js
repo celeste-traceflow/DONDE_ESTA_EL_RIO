@@ -1,5 +1,6 @@
 import layoutInicial from './layout-inicial.json'
 import { abrirTarjetaCentrada } from './tarjeta-centrada.js'
+import { sincronizarEmbeddingsYConexiones } from './conexiones.js'
 
 // Qué fracción del ancho/alto de una tarjeta avanza el cursor de la cascada en cada paso.
 // 0.8 = cada tarjeta nueva se solapa ~20% con la anterior (se ve la mayor parte de cada una).
@@ -94,6 +95,13 @@ export function renderCauce(container, { recuerdos, citas }) {
     if (accion === 'ver-todo') controles.verTodo()
     if (accion === 'exportar') exportarDiseno()
   })
+
+  // Corre en segundo plano: no bloquea el Cauce, que ya se ve con los datos
+  // estáticos. La primera vez calcula los embeddings que falten (puede
+  // tardar); las siguientes veces ya están cacheados en Postgres.
+  sincronizarEmbeddingsYConexiones(recuerdos, citas, (mensaje) => console.log('[conexiones]', mensaje)).catch(
+    (err) => console.error('[conexiones] error sincronizando', err)
+  )
 }
 
 function exportarDiseno() {

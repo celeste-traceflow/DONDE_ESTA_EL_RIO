@@ -21,6 +21,20 @@ app.get("/health/db", async (req, res) => {
   }
 });
 
+app.get("/api/tags-estado", async (req, res) => {
+  try {
+    const { rows } = await pool.query("select recuerdo_id, palabra, estado from tags_estado");
+    const porRecuerdo = {};
+    for (const fila of rows) {
+      if (!porRecuerdo[fila.recuerdo_id]) porRecuerdo[fila.recuerdo_id] = {};
+      porRecuerdo[fila.recuerdo_id][fila.palabra] = fila.estado;
+    }
+    res.json(porRecuerdo);
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
 app.get("/api/tags-estado/:recuerdoId", async (req, res) => {
   try {
     const { rows } = await pool.query(
@@ -53,6 +67,64 @@ app.post("/api/tags-estado", async (req, res) => {
          on conflict (recuerdo_id, palabra)
          do update set estado = $3, actualizado_en = now()`,
         [recuerdo_id, palabra, estado]
+      );
+    }
+    res.json({ status: "ok" });
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
+app.get("/api/embeddings", async (req, res) => {
+  try {
+    const { rows } = await pool.query("select tipo, item_id, vector from embeddings");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
+app.post("/api/embeddings", async (req, res) => {
+  const { tipo, item_id, vector } = req.body;
+  if (!tipo || !item_id || !Array.isArray(vector)) {
+    return res.status(400).json({ status: "error", mensaje: "Falta tipo, item_id o vector" });
+  }
+  try {
+    await pool.query(
+      `insert into embeddings (tipo, item_id, vector)
+       values ($1, $2, $3)
+       on conflict (tipo, item_id)
+       do update set vector = $3, actualizado_en = now()`,
+      [tipo, item_id, JSON.stringify(vector)]
+    );
+    res.json({ status: "ok" });
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
+app.get("/api/conexiones", async (req, res) => {
+  try {
+    const { rows } = await pool.query("select * from conexiones");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
+app.post("/api/conexiones", async (req, res) => {
+  const { conexiones } = req.body;
+  if (!Array.isArray(conexiones)) {
+    return res.status(400).json({ status: "error", mensaje: "Falta el array de conexiones" });
+  }
+  try {
+    for (const c of conexiones) {
+      await pool.query(
+        `insert into conexiones (tipo_a, id_a, tipo_b, id_b, similaridad)
+         values ($1, $2, $3, $4, $5)
+         on conflict (tipo_a, id_a, tipo_b, id_b)
+         do update set similaridad = $5`,
+        [c.tipo_a, c.id_a, c.tipo_b, c.id_b, c.similaridad]
       );
     }
     res.json({ status: "ok" });

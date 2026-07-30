@@ -1,4 +1,5 @@
 import { obtenerTagsEstado, guardarTagEstado } from './api.js'
+import { actualizarEmbeddingRecuerdo } from './conexiones.js'
 
 const CATEGORIAS_TAGS = [
   'MEDIO',
@@ -191,6 +192,8 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
     })
 
     const tablaTagsEl = overlay.querySelector('.tc-tags table')
+    let estadoActual = {}
+
     tablaTagsEl.addEventListener('click', (e) => {
       const span = e.target.closest('.tag-palabra')
       if (!span) return
@@ -198,10 +201,21 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       const siguiente =
         actual === 'ninguno' ? 'subrayado' : actual === 'subrayado' ? 'tachado' : 'ninguno'
       aplicarEstadoPalabra(span, siguiente)
-      guardarTagEstado(recuerdo.id, span.dataset.palabra, siguiente === 'ninguno' ? null : siguiente)
+
+      const palabra = span.dataset.palabra
+      if (siguiente === 'ninguno') delete estadoActual[palabra]
+      else estadoActual[palabra] = siguiente
+
+      guardarTagEstado(recuerdo.id, palabra, siguiente === 'ninguno' ? null : siguiente)
+      // Recalcula el embedding de esta tarjeta (y sus conexiones) con el peso
+      // nuevo. No bloquea la interacción: corre en segundo plano.
+      actualizarEmbeddingRecuerdo(recuerdo, estadoActual).catch((err) =>
+        console.error('[conexiones] error actualizando embedding', err)
+      )
     })
 
     obtenerTagsEstado(recuerdo.id).then((estados) => {
+      estadoActual = estados
       tablaTagsEl.querySelectorAll('.tag-palabra').forEach((span) => {
         const estado = estados[span.dataset.palabra]
         if (estado) aplicarEstadoPalabra(span, estado)

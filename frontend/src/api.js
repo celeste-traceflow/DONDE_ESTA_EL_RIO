@@ -6,10 +6,44 @@ export async function obtenerTagsEstado(recuerdoId) {
   return res.json()
 }
 
+export async function obtenerTodosTagsEstado() {
+  const res = await fetch(`${API_URL}/api/tags-estado`)
+  if (!res.ok) return {}
+  return res.json()
+}
+
 export async function guardarTagEstado(recuerdoId, palabra, estado) {
   await fetch(`${API_URL}/api/tags-estado`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ recuerdo_id: recuerdoId, palabra, estado }),
+  })
+}
+
+export async function obtenerEmbeddings() {
+  const res = await fetch(`${API_URL}/api/embeddings`)
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function guardarEmbedding(tipo, itemId, vector) {
+  await fetch(`${API_URL}/api/embeddings`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tipo, item_id: itemId, vector }),
+  })
+}
+
+export async function obtenerConexiones() {
+  const res = await fetch(`${API_URL}/api/conexiones`)
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function guardarConexiones(conexiones) {
+  await fetch(`${API_URL}/api/conexiones`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ conexiones }),
   })
 }
