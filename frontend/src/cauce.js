@@ -193,7 +193,10 @@ function calcularVistaCompleta(viewport, layout) {
 
 function activarPanZoom(viewport, mundo, inicial, layout) {
   let { x, y, scale } = inicial
-  let arrastrando = false
+  let arrastrandoMundo = false
+  let tarjetaArrastrada = null
+  let tarjetaX = 0
+  let tarjetaY = 0
   let lastX = 0
   let lastY = 0
 
@@ -211,14 +214,34 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
   }
 
   viewport.addEventListener('mousedown', (e) => {
-    arrastrando = true
-    viewport.classList.add('arrastrando')
     lastX = e.clientX
     lastY = e.clientY
+
+    const tarjeta = e.target.closest('.tarjeta')
+    if (tarjeta) {
+      tarjetaArrastrada = tarjeta
+      tarjetaX = parseFloat(tarjeta.style.left)
+      tarjetaY = parseFloat(tarjeta.style.top)
+      tarjeta.classList.add('arrastrando')
+      tarjeta.style.zIndex = 9999
+    } else {
+      arrastrandoMundo = true
+      viewport.classList.add('arrastrando')
+    }
   })
 
   window.addEventListener('mousemove', (e) => {
-    if (!arrastrando) return
+    if (tarjetaArrastrada) {
+      tarjetaX += (e.clientX - lastX) / scale
+      tarjetaY += (e.clientY - lastY) / scale
+      tarjetaArrastrada.style.left = `${tarjetaX}px`
+      tarjetaArrastrada.style.top = `${tarjetaY}px`
+      lastX = e.clientX
+      lastY = e.clientY
+      return
+    }
+
+    if (!arrastrandoMundo) return
     x += e.clientX - lastX
     y += e.clientY - lastY
     lastX = e.clientX
@@ -227,7 +250,11 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
   })
 
   window.addEventListener('mouseup', () => {
-    arrastrando = false
+    if (tarjetaArrastrada) {
+      tarjetaArrastrada.classList.remove('arrastrando')
+      tarjetaArrastrada = null
+    }
+    arrastrandoMundo = false
     viewport.classList.remove('arrastrando')
   })
 

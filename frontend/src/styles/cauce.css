@@ -20,6 +20,11 @@
 .tarjeta {
   position: absolute;
   user-select: none;
+  cursor: grab;
+}
+
+.tarjeta.arrastrando {
+  cursor: grabbing;
 }
 
 .tarjeta-recuerdo .foto-marco {
