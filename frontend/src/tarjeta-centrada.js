@@ -121,13 +121,13 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       <button type="button" class="tc-flecha tc-flecha-der" title="Recuerdo siguiente">${svg(ICONO_FLECHA_DER, 22)}</button>
 
       <div class="tc-menu-operativo">
-        <button type="button" title="Mostrar/ocultar conexiones (próximamente)">${svg(ICONO_CONEXIONES)}</button>
+        <button type="button" title="Mostrar/ocultar conexiones (próximamente)">${svg(ICONO_CONEXIONES, 30)}</button>
         <span class="tc-menu-separador"></span>
-        <button type="button" title="Nuevo post-it (próximamente)">${svg(ICONO_NUEVO_POSTIT)}</button>
+        <button type="button" title="Nuevo post-it (próximamente)">${svg(ICONO_NUEVO_POSTIT, 30)}</button>
         <span class="tc-menu-separador"></span>
-        <button type="button" title="Editar post-it (próximamente)">${svg(ICONO_EDITAR_POSTIT)}</button>
+        <button type="button" title="Editar post-it (próximamente)">${svg(ICONO_EDITAR_POSTIT, 30)}</button>
         <span class="tc-menu-separador"></span>
-        <button type="button" title="Nueva cita teórica (próximamente)">${svg(ICONO_NUEVA_CITA)}</button>
+        <button type="button" title="Nueva cita teórica (próximamente)">${svg(ICONO_NUEVA_CITA, 30)}</button>
       </div>
     `
 
