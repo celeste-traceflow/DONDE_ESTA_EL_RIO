@@ -25,7 +25,7 @@
 
 .tarjeta-recuerdo .foto-marco {
   background: #fff;
-  padding: 10px 10px 0.6rem;
+  padding: 8px;
   border-radius: 2px;
   box-shadow: 0 3px 10px rgba(43, 38, 32, 0.25);
 }
@@ -35,19 +35,6 @@
   width: 100%;
   height: auto;
   pointer-events: none;
-}
-
-.tarjeta-recuerdo .recuerdo-texto {
-  font-family: var(--font-intima);
-  font-style: italic;
-  font-size: 0.68rem;
-  line-height: 1.35;
-  margin: 0.4rem 0 0.3rem;
-  color: var(--color-tinta);
-}
-
-.tarjeta-recuerdo .marca-coordenada {
-  font-size: 0.6rem;
 }
 
 .tarjeta-cita {
@@ -69,4 +56,61 @@
 .tarjeta-cita .autor {
   font-family: var(--font-maquina);
   font-size: 0.65rem;
+}
+
+/* Pill superior con la sección actual */
+.cauce-pill {
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--color-tinta);
+  border-radius: 999px;
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  font-family: var(--font-maquina);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  z-index: 1000;
+}
+
+.cauce-pill .separador {
+  width: 1px;
+  height: 1em;
+  background: var(--color-tinta);
+  opacity: 0.5;
+}
+
+/* Cluster de navegación espacial — vértice inferior izquierdo, aparte del menú operativo */
+.cauce-nav-espacial {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  z-index: 1000;
+}
+
+.cauce-nav-espacial button {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-tinta);
+  color: var(--color-papel);
+  font-family: var(--font-maquina);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cauce-nav-espacial button:hover {
+  opacity: 0.85;
 }
