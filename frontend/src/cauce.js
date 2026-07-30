@@ -61,22 +61,64 @@ function intercalarCitas(recuerdos, citas) {
   return items
 }
 
+// Curva del cauce: suma de ondas de distinta frecuencia/amplitud para un
+// meandro orgánico (curvas chicas y otras más amplias), no una onda uniforme.
+function formaRio(x) {
+  return (
+    Math.sin(x * 0.0055) * 130 +
+    Math.sin(x * 0.017 + 1.3) * 55 +
+    Math.sin(x * 0.0035 + 2.7) * 85
+  )
+}
+
 function ubicarEnCascada(items) {
-  let cursorX = 0
-  let cursorY = 0
+  const puntos = []
+  const paso = 3 // resolución de muestreo del camino, en px
+  let x = 0
+  let prevX = 0
+  let prevY = formaRio(0)
+  let distAcumulada = 0
+  let proximaDistancia = 0
+  let idx = 0
 
-  return items.map((item, i) => {
-    const ancho = item.tipo === 'recuerdo' ? 160 + Math.random() * 80 : 210
-    const alto = item.tipo === 'recuerdo' ? ancho * 1.2 : ancho * 0.9
+  while (idx < items.length) {
+    const y = formaRio(x)
+    const dx = x - prevX
+    const dy = y - prevY
+    distAcumulada += Math.hypot(dx, dy)
+    prevX = x
+    prevY = y
 
-    if (i > 0) {
-      cursorX += ancho * AVANCE_RATIO + (Math.random() - 0.5) * 20
-      cursorY += alto * AVANCE_RATIO + (Math.random() - 0.5) * 20 + Math.sin(i * 0.35) * 18
+    if (distAcumulada >= proximaDistancia) {
+      const item = items[idx]
+      const ancho = item.tipo === 'recuerdo' ? 160 + Math.random() * 80 : 210
+      const alto = item.tipo === 'recuerdo' ? ancho * 1.2 : ancho * 0.9
+
+      // jitter perpendicular a la curva, para que no queden todas clavadas sobre la línea
+      const largoTangente = Math.hypot(dx, dy) || 1
+      const normalX = -dy / largoTangente
+      const normalY = dx / largoTangente
+      const jitterPerp = (Math.random() - 0.5) * 60
+
+      const anguloTangente = (Math.atan2(dy, dx || 0.0001) * 180) / Math.PI
+
+      puntos.push({
+        ...item,
+        x: x + normalX * jitterPerp,
+        y: y + normalY * jitterPerp,
+        rotacion: anguloTangente * 0.25 + (Math.random() - 0.5) * 8,
+        ancho,
+        alto,
+      })
+
+      idx++
+      proximaDistancia = distAcumulada + ancho * AVANCE_RATIO
     }
 
-    const rotacion = (Math.random() - 0.5) * 8
-    return { ...item, x: cursorX, y: cursorY, rotacion, ancho, alto }
-  })
+    x += paso
+  }
+
+  return puntos
 }
 
 function crearTarjeta(item) {
