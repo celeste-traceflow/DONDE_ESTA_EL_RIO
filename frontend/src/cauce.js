@@ -12,9 +12,13 @@ function cargarPosicionesGuardadas() {
   }
 }
 
-function guardarPosicion(tipo, id, x, y) {
+function guardarEstado(tarjeta) {
   const posiciones = cargarPosicionesGuardadas()
-  posiciones[`${tipo}-${id}`] = { x, y }
+  posiciones[`${tarjeta.dataset.tipo}-${tarjeta.dataset.id}`] = {
+    x: parseFloat(tarjeta.style.left),
+    y: parseFloat(tarjeta.style.top),
+    ancho: parseFloat(tarjeta.style.width),
+  }
   localStorage.setItem(CLAVE_POSICIONES, JSON.stringify(posiciones))
 }
 
@@ -22,7 +26,8 @@ function aplicarPosicionesGuardadas(layout) {
   const guardadas = cargarPosicionesGuardadas()
   return layout.map((item) => {
     const guardada = guardadas[`${item.tipo}-${item.data.id}`]
-    return guardada ? { ...item, x: guardada.x, y: guardada.y } : item
+    if (!guardada) return item
+    return { ...item, x: guardada.x, y: guardada.y, ancho: guardada.ancho ?? item.ancho }
   })
 }
 
@@ -168,6 +173,12 @@ function crearTarjeta(item) {
       <div class="autor">${escaparHtml(c.autor)}</div>
     `
   }
+
+  const tirador = document.createElement('div')
+  tirador.className = 'resize-handle'
+  tirador.title = 'Cambiar tamaño'
+  el.appendChild(tirador)
+
   return el
 }
 
@@ -223,6 +234,8 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
   let tarjetaArrastrada = null
   let tarjetaX = 0
   let tarjetaY = 0
+  let tarjetaRedimensionada = null
+  let anchoRedimensionado = 0
   let lastX = 0
   let lastY = 0
 
@@ -243,6 +256,13 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
     lastX = e.clientX
     lastY = e.clientY
 
+    const tirador = e.target.closest('.resize-handle')
+    if (tirador) {
+      tarjetaRedimensionada = tirador.closest('.tarjeta')
+      anchoRedimensionado = parseFloat(tarjetaRedimensionada.style.width)
+      return
+    }
+
     const tarjeta = e.target.closest('.tarjeta')
     if (tarjeta) {
       tarjetaArrastrada = tarjeta
@@ -257,6 +277,14 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
   })
 
   window.addEventListener('mousemove', (e) => {
+    if (tarjetaRedimensionada) {
+      anchoRedimensionado = Math.max(60, anchoRedimensionado + (e.clientX - lastX) / scale)
+      tarjetaRedimensionada.style.width = `${anchoRedimensionado}px`
+      lastX = e.clientX
+      lastY = e.clientY
+      return
+    }
+
     if (tarjetaArrastrada) {
       tarjetaX += (e.clientX - lastX) / scale
       tarjetaY += (e.clientY - lastY) / scale
@@ -276,8 +304,12 @@ function activarPanZoom(viewport, mundo, inicial, layout) {
   })
 
   window.addEventListener('mouseup', () => {
+    if (tarjetaRedimensionada) {
+      guardarEstado(tarjetaRedimensionada)
+      tarjetaRedimensionada = null
+    }
     if (tarjetaArrastrada) {
-      guardarPosicion(tarjetaArrastrada.dataset.tipo, tarjetaArrastrada.dataset.id, tarjetaX, tarjetaY)
+      guardarEstado(tarjetaArrastrada)
       tarjetaArrastrada.classList.remove('arrastrando')
       tarjetaArrastrada = null
     }
