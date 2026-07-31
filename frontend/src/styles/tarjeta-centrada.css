@@ -205,6 +205,93 @@
   width: 26%;
 }
 
+.tc-postits {
+  display: contents;
+}
+
+.postit {
+  align-self: flex-start;
+  width: 220px;
+  min-height: 160px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: 0 8px 24px rgba(43, 38, 32, 0.3);
+}
+
+.postit-gris {
+  background: var(--color-postit-gris);
+}
+
+.postit-beige {
+  background: var(--color-postit-beige);
+}
+
+.postit-texto {
+  flex: 1;
+  border: none;
+  background: transparent;
+  resize: none;
+  font-family: var(--font-intima);
+  font-style: italic;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-tinta);
+  padding: 0;
+}
+
+.postit-texto:focus {
+  outline: none;
+}
+
+.postit-controles {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.postit.editando .postit-controles {
+  display: flex;
+}
+
+.postit-variante {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 1px solid rgba(43, 38, 32, 0.3);
+  cursor: pointer;
+  padding: 0;
+}
+
+.postit-variante[data-variante='gris'] {
+  background: var(--color-postit-gris);
+}
+
+.postit-variante[data-variante='beige'] {
+  background: var(--color-postit-beige);
+}
+
+.postit-variante.activa {
+  border-color: var(--color-tinta);
+  border-width: 2px;
+}
+
+.postit-borrar {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-tinta);
+  opacity: 0.6;
+  padding: 0;
+  display: flex;
+}
+
+.postit-borrar:hover {
+  opacity: 1;
+}
+
 .tc-menu-operativo {
   position: fixed;
   bottom: 1.5rem;

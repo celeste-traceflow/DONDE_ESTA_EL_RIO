@@ -34,6 +34,33 @@ export async function guardarEmbedding(tipo, itemId, vector) {
   })
 }
 
+export async function obtenerPostIts(recuerdoId) {
+  const res = await fetch(`${API_URL}/api/post-its/${recuerdoId}`)
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function crearPostIt(recuerdoId, texto, variante) {
+  const res = await fetch(`${API_URL}/api/post-its`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ recuerdo_id: recuerdoId, texto, variante }),
+  })
+  return res.json()
+}
+
+export async function actualizarPostIt(id, cambios) {
+  await fetch(`${API_URL}/api/post-its/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cambios),
+  })
+}
+
+export async function borrarPostIt(id) {
+  await fetch(`${API_URL}/api/post-its/${id}`, { method: "DELETE" })
+}
+
 export async function obtenerConexiones() {
   const res = await fetch(`${API_URL}/api/conexiones`)
   if (!res.ok) return []

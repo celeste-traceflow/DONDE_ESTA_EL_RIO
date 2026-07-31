@@ -133,6 +133,58 @@ app.post("/api/conexiones", async (req, res) => {
   }
 });
 
+app.get("/api/post-its/:recuerdoId", async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      "select id, texto, variante, creado_en from post_its where recuerdo_id = $1 order by creado_en asc",
+      [req.params.recuerdoId]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
+app.post("/api/post-its", async (req, res) => {
+  const { recuerdo_id, texto, variante } = req.body;
+  if (!recuerdo_id) {
+    return res.status(400).json({ status: "error", mensaje: "Falta recuerdo_id" });
+  }
+  try {
+    const { rows } = await pool.query(
+      `insert into post_its (recuerdo_id, texto, variante)
+       values ($1, $2, $3)
+       returning id, texto, variante, creado_en`,
+      [recuerdo_id, texto || "", variante || "gris"]
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
+app.put("/api/post-its/:id", async (req, res) => {
+  const { texto, variante } = req.body;
+  try {
+    await pool.query(
+      `update post_its set texto = coalesce($1, texto), variante = coalesce($2, variante) where id = $3`,
+      [texto, variante, req.params.id]
+    );
+    res.json({ status: "ok" });
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
+app.delete("/api/post-its/:id", async (req, res) => {
+  try {
+    await pool.query("delete from post_its where id = $1", [req.params.id]);
+    res.json({ status: "ok" });
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Backend escuchando en el puerto ${port}`);
 });

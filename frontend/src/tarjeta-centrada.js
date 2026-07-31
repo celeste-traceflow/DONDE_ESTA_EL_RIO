@@ -1,4 +1,4 @@
-import { obtenerTagsEstado, guardarTagEstado } from './api.js'
+import { obtenerTagsEstado, guardarTagEstado, obtenerPostIts, crearPostIt, actualizarPostIt, borrarPostIt } from './api.js'
 import { actualizarEmbeddingRecuerdo } from './conexiones.js'
 
 const CATEGORIAS_TAGS = [
@@ -88,6 +88,14 @@ const ICONO_EDITAR_POSTIT = `
   <polyline fill="none" stroke="#ede5d3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.17" points="25.82 41.21 32.42 41.21 32.42 30.22 20.33 41.21"/>
   <line fill="none" stroke="#ede5d3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.17" x1="32.42" y1="30.22" x2="53.3" y2="30.22"/>
   <polyline fill="none" stroke="#ede5d3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.17" points="69.78 46.7 69.78 79.67 20.33 79.67 20.33 41.21"/>
+`
+
+const ICONO_BORRAR_POSTIT = `
+  <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" x1="20" y1="30" x2="80" y2="30"/>
+  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M38,30v-8c0-3.31,2.69-6,6-6h12c3.31,0,6,2.69,6,6v8"/>
+  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M28,30l4,52c0,3.31,2.69,6,6,6h24c3.31,0,6-2.69,6-6l4-52"/>
+  <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" x1="42" y1="44" x2="42" y2="72"/>
+  <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" x1="58" y1="44" x2="58" y2="72"/>
 `
 
 const ICONO_NUEVA_CITA = `
@@ -183,14 +191,16 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
           <p>${escaparHtml(recuerdo.recuerdo_afectivo)}</p>
           <span class="marca-coordenada">${escaparHtml(recuerdo.lugar_y_fecha)}</span>
         </div>
+
+        <div class="tc-postits"></div>
       </div>
 
       <button type="button" class="tc-flecha tc-flecha-der" title="Recuerdo siguiente">${svg(ICONO_FLECHA_DER, 22)}</button>
 
       <div class="tc-menu-operativo">
-        <button type="button" title="Nuevo post-it (próximamente)">${svg(ICONO_NUEVO_POSTIT, 30)}</button>
+        <button type="button" data-accion="nuevo-postit" title="Nuevo post-it">${svg(ICONO_NUEVO_POSTIT, 30)}</button>
         <span class="tc-menu-separador"></span>
-        <button type="button" title="Editar post-it (próximamente)">${svg(ICONO_EDITAR_POSTIT, 30)}</button>
+        <button type="button" data-accion="editar-postit" title="Editar post-it">${svg(ICONO_EDITAR_POSTIT, 30)}</button>
         <span class="tc-menu-separador"></span>
         <button type="button" title="Nueva cita teórica (próximamente)">${svg(ICONO_NUEVA_CITA, 30)}</button>
       </div>
@@ -243,6 +253,95 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
         const estado = estados[span.dataset.palabra]
         if (estado) aplicarEstadoPalabra(span, estado)
       })
+    })
+
+    const contenedorPostits = overlay.querySelector('.tc-postits')
+    const botonNuevoPostit = overlay.querySelector('[data-accion="nuevo-postit"]')
+    const botonEditarPostit = overlay.querySelector('[data-accion="editar-postit"]')
+    let postits = []
+    let postitEditandoId = null
+    let modoEditarPostit = false
+
+    function renderizarPostits() {
+      contenedorPostits.innerHTML = postits
+        .map((p) => {
+          const editando = p.id === postitEditandoId
+          return `
+            <div class="postit postit-${p.variante}${editando ? ' editando' : ''}" data-id="${p.id}">
+              <textarea class="postit-texto" ${editando ? '' : 'readonly'} placeholder="Escribí algo...">${escaparHtml(p.texto)}</textarea>
+              <div class="postit-controles">
+                <button type="button" class="postit-variante${p.variante === 'gris' ? ' activa' : ''}" data-variante="gris" title="Gris topo"></button>
+                <button type="button" class="postit-variante${p.variante === 'beige' ? ' activa' : ''}" data-variante="beige" title="Beige"></button>
+                <button type="button" class="postit-borrar" title="Borrar post-it">${svg(ICONO_BORRAR_POSTIT, 14)}</button>
+              </div>
+            </div>
+          `
+        })
+        .join('')
+
+      contenedorPostits.querySelectorAll('.postit').forEach((el) => {
+        const id = Number(el.dataset.id)
+        const textarea = el.querySelector('.postit-texto')
+
+        el.addEventListener('click', (e) => {
+          if (postitEditandoId === id || !modoEditarPostit) return
+          e.stopPropagation()
+          postitEditandoId = id
+          renderizarPostits()
+          contenedorPostits.querySelector(`.postit[data-id="${id}"] .postit-texto`)?.focus()
+        })
+
+        textarea.addEventListener('blur', () => {
+          if (postitEditandoId !== id) return
+          const nuevoTexto = textarea.value
+          const p = postits.find((x) => x.id === id)
+          if (p) p.texto = nuevoTexto
+          actualizarPostIt(id, { texto: nuevoTexto })
+        })
+
+        el.querySelectorAll('.postit-variante').forEach((boton) => {
+          boton.addEventListener('click', (e) => {
+            e.stopPropagation()
+            const variante = boton.dataset.variante
+            const p = postits.find((x) => x.id === id)
+            if (p) p.variante = variante
+            actualizarPostIt(id, { variante })
+            renderizarPostits()
+          })
+        })
+
+        el.querySelector('.postit-borrar').addEventListener('click', (e) => {
+          e.stopPropagation()
+          postits = postits.filter((x) => x.id !== id)
+          if (postitEditandoId === id) postitEditandoId = null
+          borrarPostIt(id)
+          renderizarPostits()
+        })
+      })
+    }
+
+    obtenerPostIts(recuerdo.id).then((lista) => {
+      postits = lista
+      renderizarPostits()
+    })
+
+    botonNuevoPostit.addEventListener('click', async (e) => {
+      e.stopPropagation()
+      const nuevo = await crearPostIt(recuerdo.id, '', 'gris')
+      postits.push(nuevo)
+      postitEditandoId = nuevo.id
+      renderizarPostits()
+      contenedorPostits.querySelector(`.postit[data-id="${nuevo.id}"] .postit-texto`)?.focus()
+    })
+
+    botonEditarPostit.addEventListener('click', (e) => {
+      e.stopPropagation()
+      modoEditarPostit = !modoEditarPostit
+      botonEditarPostit.classList.toggle('activo', modoEditarPostit)
+      if (!modoEditarPostit) {
+        postitEditandoId = null
+        renderizarPostits()
+      }
     })
 
     const recuerdoEl = overlay.querySelector('.tc-recuerdo')
