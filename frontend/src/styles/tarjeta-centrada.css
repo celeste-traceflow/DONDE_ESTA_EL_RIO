@@ -216,11 +216,9 @@
   position: fixed;
   pointer-events: auto;
   width: 220px;
-  min-height: 160px;
   padding: 1.1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   box-shadow: 0 8px 24px rgba(43, 38, 32, 0.3);
   cursor: grab;
 }
@@ -233,11 +231,16 @@
   background: var(--color-postit-beige);
 }
 
+.postit-piedra {
+  background: var(--color-postit-piedra);
+}
+
 .postit-texto {
-  flex: 1;
+  flex: none;
   border: none;
   background: transparent;
   resize: none;
+  overflow: hidden;
   font-family: var(--font-intima);
   font-style: italic;
   font-weight: 300;
@@ -245,6 +248,7 @@
   line-height: 1.4;
   color: var(--color-tinta);
   padding: 0;
+  margin: 0;
 }
 
 .postit-texto:focus {
@@ -254,6 +258,7 @@
 .postit-coordenada {
   display: flex;
   align-items: center;
+  margin-top: 0.8rem;
   font-family: var(--font-maquina);
   font-size: 0.6rem;
   color: var(--color-tinta);
@@ -284,6 +289,7 @@
   display: none;
   align-items: center;
   gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .postit.editando .postit-controles {
@@ -305,6 +311,10 @@
 
 .postit-variante[data-variante='beige'] {
   background: var(--color-postit-beige);
+}
+
+.postit-variante[data-variante='piedra'] {
+  background: var(--color-postit-piedra);
 }
 
 .postit-variante.activa {

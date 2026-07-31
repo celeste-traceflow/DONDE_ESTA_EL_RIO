@@ -3,7 +3,7 @@ create table if not exists post_its (
   id serial primary key,
   recuerdo_id integer not null,
   texto text not null,
-  variante text not null default 'gris' check (variante in ('gris', 'beige')),
+  variante text not null default 'gris' check (variante in ('gris', 'beige', 'piedra')),
   lugar_fecha text,
   pos_x real not null default 0,
   pos_y real not null default 0,

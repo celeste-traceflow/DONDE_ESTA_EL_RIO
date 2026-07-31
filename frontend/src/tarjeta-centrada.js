@@ -31,6 +31,13 @@ function escaparHtml(str) {
   return div.innerHTML
 }
 
+// El post-it no tiene alto fijo: crece o se achica con lo que se escribe,
+// igual que la tarjeta de recuerdo (que tampoco tiene alto fijo, solo fluye).
+function ajustarAlturaTexto(textarea) {
+  textarea.style.height = 'auto'
+  textarea.style.height = `${textarea.scrollHeight}px`
+}
+
 // Cada tag se muestra como una lista separada por comas; dentro de cada
 // elemento, cada palabra suelta es su propia unidad clickeable para
 // subrayar/tachar (ej. "marco de puerta" → "marco", "de" y "puerta" por
@@ -282,6 +289,7 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
               <div class="postit-controles">
                 <button type="button" class="postit-variante${p.variante === 'gris' ? ' activa' : ''}" data-variante="gris" title="Gris topo"></button>
                 <button type="button" class="postit-variante${p.variante === 'beige' ? ' activa' : ''}" data-variante="beige" title="Beige"></button>
+                <button type="button" class="postit-variante${p.variante === 'piedra' ? ' activa' : ''}" data-variante="piedra" title="Piedra"></button>
                 <button type="button" class="postit-borrar" title="Borrar post-it">${svg(ICONO_BORRAR_POSTIT, 14)}</button>
               </div>
             </div>
@@ -293,6 +301,9 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
         const id = Number(el.dataset.id)
         const textarea = el.querySelector('.postit-texto')
         const inputLugarFecha = el.querySelector('.postit-lugar-fecha')
+
+        ajustarAlturaTexto(textarea)
+        textarea.addEventListener('input', () => ajustarAlturaTexto(textarea))
 
         el.addEventListener('mousedown', (e) => {
           if (e.target.closest('.postit-controles')) return
