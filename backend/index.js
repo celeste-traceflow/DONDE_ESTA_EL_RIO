@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { pool } from "./db.js";
+import { db } from "./db.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -12,20 +12,20 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", proyecto: "rio-de-recuerdos" });
 });
 
-app.get("/health/db", async (req, res) => {
+app.get("/health/db", (req, res) => {
   try {
-    const { rows } = await pool.query("select now()");
-    res.json({ status: "ok", hora_db: rows[0].now });
+    const fila = db.prepare("select datetime('now') as ahora").get();
+    res.json({ status: "ok", hora_db: fila.ahora });
   } catch (err) {
     res.status(500).json({ status: "error", mensaje: err.message });
   }
 });
 
-app.get("/api/tags-estado", async (req, res) => {
+app.get("/api/tags-estado", (req, res) => {
   try {
-    const { rows } = await pool.query("select recuerdo_id, palabra, estado from tags_estado");
+    const filas = db.prepare("select recuerdo_id, palabra, estado from tags_estado").all();
     const porRecuerdo = {};
-    for (const fila of rows) {
+    for (const fila of filas) {
       if (!porRecuerdo[fila.recuerdo_id]) porRecuerdo[fila.recuerdo_id] = {};
       porRecuerdo[fila.recuerdo_id][fila.palabra] = fila.estado;
     }
@@ -35,39 +35,34 @@ app.get("/api/tags-estado", async (req, res) => {
   }
 });
 
-app.get("/api/tags-estado/:recuerdoId", async (req, res) => {
+app.get("/api/tags-estado/:recuerdoId", (req, res) => {
   try {
-    const { rows } = await pool.query(
-      "select palabra, estado from tags_estado where recuerdo_id = $1",
-      [req.params.recuerdoId]
-    );
+    const filas = db
+      .prepare("select palabra, estado from tags_estado where recuerdo_id = ?")
+      .all(req.params.recuerdoId);
     const estado = {};
-    for (const fila of rows) estado[fila.palabra] = fila.estado;
+    for (const fila of filas) estado[fila.palabra] = fila.estado;
     res.json(estado);
   } catch (err) {
     res.status(500).json({ status: "error", mensaje: err.message });
   }
 });
 
-app.post("/api/tags-estado", async (req, res) => {
+app.post("/api/tags-estado", (req, res) => {
   const { recuerdo_id, palabra, estado } = req.body;
   if (!recuerdo_id || !palabra) {
     return res.status(400).json({ status: "error", mensaje: "Falta recuerdo_id o palabra" });
   }
   try {
     if (estado === null) {
-      await pool.query(
-        "delete from tags_estado where recuerdo_id = $1 and palabra = $2",
-        [recuerdo_id, palabra]
-      );
+      db.prepare("delete from tags_estado where recuerdo_id = ? and palabra = ?").run(recuerdo_id, palabra);
     } else {
-      await pool.query(
+      db.prepare(
         `insert into tags_estado (recuerdo_id, palabra, estado)
-         values ($1, $2, $3)
+         values (?, ?, ?)
          on conflict (recuerdo_id, palabra)
-         do update set estado = $3, actualizado_en = now()`,
-        [recuerdo_id, palabra, estado]
-      );
+         do update set estado = excluded.estado, actualizado_en = datetime('now')`
+      ).run(recuerdo_id, palabra, estado);
     }
     res.json({ status: "ok" });
   } catch (err) {
@@ -75,116 +70,117 @@ app.post("/api/tags-estado", async (req, res) => {
   }
 });
 
-app.get("/api/embeddings", async (req, res) => {
+app.get("/api/embeddings", (req, res) => {
   try {
-    const { rows } = await pool.query("select tipo, item_id, vector from embeddings");
-    res.json(rows);
+    const filas = db.prepare("select tipo, item_id, vector from embeddings").all();
+    res.json(filas.map((f) => ({ ...f, vector: JSON.parse(f.vector) })));
   } catch (err) {
     res.status(500).json({ status: "error", mensaje: err.message });
   }
 });
 
-app.post("/api/embeddings", async (req, res) => {
+app.post("/api/embeddings", (req, res) => {
   const { tipo, item_id, vector } = req.body;
   if (!tipo || !item_id || !Array.isArray(vector)) {
     return res.status(400).json({ status: "error", mensaje: "Falta tipo, item_id o vector" });
   }
   try {
-    await pool.query(
+    db.prepare(
       `insert into embeddings (tipo, item_id, vector)
-       values ($1, $2, $3)
+       values (?, ?, ?)
        on conflict (tipo, item_id)
-       do update set vector = $3, actualizado_en = now()`,
-      [tipo, item_id, JSON.stringify(vector)]
-    );
+       do update set vector = excluded.vector, actualizado_en = datetime('now')`
+    ).run(tipo, item_id, JSON.stringify(vector));
     res.json({ status: "ok" });
   } catch (err) {
     res.status(500).json({ status: "error", mensaje: err.message });
   }
 });
 
-app.get("/api/conexiones", async (req, res) => {
+app.get("/api/conexiones", (req, res) => {
   try {
-    const { rows } = await pool.query("select * from conexiones");
-    res.json(rows);
+    const filas = db.prepare("select * from conexiones").all();
+    res.json(filas);
   } catch (err) {
     res.status(500).json({ status: "error", mensaje: err.message });
   }
 });
 
-app.post("/api/conexiones", async (req, res) => {
+app.post("/api/conexiones", (req, res) => {
   const { conexiones } = req.body;
   if (!Array.isArray(conexiones)) {
     return res.status(400).json({ status: "error", mensaje: "Falta el array de conexiones" });
   }
   try {
-    for (const c of conexiones) {
-      await pool.query(
-        `insert into conexiones (tipo_a, id_a, tipo_b, id_b, similaridad)
-         values ($1, $2, $3, $4, $5)
-         on conflict (tipo_a, id_a, tipo_b, id_b)
-         do update set similaridad = $5`,
-        [c.tipo_a, c.id_a, c.tipo_b, c.id_b, c.similaridad]
-      );
-    }
+    const upsert = db.prepare(
+      `insert into conexiones (tipo_a, id_a, tipo_b, id_b, similaridad)
+       values (?, ?, ?, ?, ?)
+       on conflict (tipo_a, id_a, tipo_b, id_b)
+       do update set similaridad = excluded.similaridad`
+    );
+    const insertarTodas = db.transaction((lista) => {
+      for (const c of lista) upsert.run(c.tipo_a, c.id_a, c.tipo_b, c.id_b, c.similaridad);
+    });
+    insertarTodas(conexiones);
     res.json({ status: "ok" });
   } catch (err) {
     res.status(500).json({ status: "error", mensaje: err.message });
   }
 });
 
-app.get("/api/post-its/:recuerdoId", async (req, res) => {
+app.get("/api/post-its/:recuerdoId", (req, res) => {
   try {
-    const { rows } = await pool.query(
-      "select id, texto, variante, lugar_fecha, pos_x, pos_y, creado_en from post_its where recuerdo_id = $1 order by creado_en asc",
-      [req.params.recuerdoId]
-    );
-    res.json(rows);
+    const filas = db
+      .prepare(
+        "select id, texto, variante, lugar_fecha, pos_x, pos_y, creado_en from post_its where recuerdo_id = ? order by creado_en asc"
+      )
+      .all(req.params.recuerdoId);
+    res.json(filas);
   } catch (err) {
     res.status(500).json({ status: "error", mensaje: err.message });
   }
 });
 
-app.post("/api/post-its", async (req, res) => {
+app.post("/api/post-its", (req, res) => {
   const { recuerdo_id, texto, variante, lugar_fecha, pos_x, pos_y } = req.body;
   if (!recuerdo_id) {
     return res.status(400).json({ status: "error", mensaje: "Falta recuerdo_id" });
   }
   try {
-    const { rows } = await pool.query(
-      `insert into post_its (recuerdo_id, texto, variante, lugar_fecha, pos_x, pos_y)
-       values ($1, $2, $3, $4, $5, $6)
-       returning id, texto, variante, lugar_fecha, pos_x, pos_y, creado_en`,
-      [recuerdo_id, texto || "", variante || "gris", lugar_fecha || null, pos_x ?? 0, pos_y ?? 0]
-    );
-    res.json(rows[0]);
+    const fila = db
+      .prepare(
+        `insert into post_its (recuerdo_id, texto, variante, lugar_fecha, pos_x, pos_y)
+         values (?, ?, ?, ?, ?, ?)
+         returning id, texto, variante, lugar_fecha, pos_x, pos_y, creado_en`
+      )
+      .get(recuerdo_id, texto || "", variante || "gris", lugar_fecha || null, pos_x ?? 0, pos_y ?? 0);
+    res.json(fila);
   } catch (err) {
     res.status(500).json({ status: "error", mensaje: err.message });
   }
 });
 
-app.put("/api/post-its/:id", async (req, res) => {
+app.put("/api/post-its/:id", (req, res) => {
   const { texto = null, variante = null, lugar_fecha = null, pos_x = null, pos_y = null } = req.body;
   try {
-    await pool.query(
+    db.prepare(
       `update post_its set
-         texto = coalesce($1, texto),
-         variante = coalesce($2, variante),
-         lugar_fecha = coalesce($3, lugar_fecha),
-         pos_x = coalesce($4, pos_x),
-         pos_y = coalesce($5, pos_y)
-       where id = $6`,
-      [texto, variante, lugar_fecha, pos_x, pos_y, req.params.id]
-    );
+         texto = coalesce(?, texto),
+         variante = coalesce(?, variante),
+         lugar_fecha = coalesce(?, lugar_fecha),
+         pos_x = coalesce(?, pos_x),
+         pos_y = coalesce(?, pos_y)
+       where id = ?`
+    ).run(texto, variante, lugar_fecha, pos_x, pos_y, req.params.id);
     res.json({ status: "ok" });
   } catch (err) {
     res.status(500).json({ status: "error", mensaje: err.message });
   }
 });
 
-app.delete("/api/post-its/:id", async (req, res) => {
+app.delete("/api/post-its/:id", (req, res) => {
   try {
-    await pool.query("delete from post_its where id = $1", [req.params.id]);
+    db.prepare("delete from post_its where id = ?").run(req.params.id);
     res.json({ status: "ok" });
   } catch (err) {
     res.status(500).json({ status: "error", mensaje: err.message });

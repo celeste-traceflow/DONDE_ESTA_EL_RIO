@@ -4,3 +4,7 @@ dist/
 .env.local
 .DS_Store
 *.log
+
+# Base de datos local (SQLite) — es el sedimento personal de Cele, no código.
+# GitHub acá es backup de código solamente; este archivo se queda en su compu.
+backend/data/
