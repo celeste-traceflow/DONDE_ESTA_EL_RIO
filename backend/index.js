@@ -136,7 +136,7 @@ app.post("/api/conexiones", async (req, res) => {
 app.get("/api/post-its/:recuerdoId", async (req, res) => {
   try {
     const { rows } = await pool.query(
-      "select id, texto, variante, creado_en from post_its where recuerdo_id = $1 order by creado_en asc",
+      "select id, texto, variante, lugar_fecha, pos_x, pos_y, creado_en from post_its where recuerdo_id = $1 order by creado_en asc",
       [req.params.recuerdoId]
     );
     res.json(rows);
@@ -146,16 +146,16 @@ app.get("/api/post-its/:recuerdoId", async (req, res) => {
 });
 
 app.post("/api/post-its", async (req, res) => {
-  const { recuerdo_id, texto, variante } = req.body;
+  const { recuerdo_id, texto, variante, lugar_fecha, pos_x, pos_y } = req.body;
   if (!recuerdo_id) {
     return res.status(400).json({ status: "error", mensaje: "Falta recuerdo_id" });
   }
   try {
     const { rows } = await pool.query(
-      `insert into post_its (recuerdo_id, texto, variante)
-       values ($1, $2, $3)
-       returning id, texto, variante, creado_en`,
-      [recuerdo_id, texto || "", variante || "gris"]
+      `insert into post_its (recuerdo_id, texto, variante, lugar_fecha, pos_x, pos_y)
+       values ($1, $2, $3, $4, $5, $6)
+       returning id, texto, variante, lugar_fecha, pos_x, pos_y, creado_en`,
+      [recuerdo_id, texto || "", variante || "gris", lugar_fecha || null, pos_x ?? 0, pos_y ?? 0]
     );
     res.json(rows[0]);
   } catch (err) {
@@ -164,11 +164,17 @@ app.post("/api/post-its", async (req, res) => {
 });
 
 app.put("/api/post-its/:id", async (req, res) => {
-  const { texto, variante } = req.body;
+  const { texto = null, variante = null, lugar_fecha = null, pos_x = null, pos_y = null } = req.body;
   try {
     await pool.query(
-      `update post_its set texto = coalesce($1, texto), variante = coalesce($2, variante) where id = $3`,
-      [texto, variante, req.params.id]
+      `update post_its set
+         texto = coalesce($1, texto),
+         variante = coalesce($2, variante),
+         lugar_fecha = coalesce($3, lugar_fecha),
+         pos_x = coalesce($4, pos_x),
+         pos_y = coalesce($5, pos_y)
+       where id = $6`,
+      [texto, variante, lugar_fecha, pos_x, pos_y, req.params.id]
     );
     res.json({ status: "ok" });
   } catch (err) {

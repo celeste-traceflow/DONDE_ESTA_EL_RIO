@@ -40,11 +40,11 @@ export async function obtenerPostIts(recuerdoId) {
   return res.json()
 }
 
-export async function crearPostIt(recuerdoId, texto, variante) {
+export async function crearPostIt(recuerdoId, datos = {}) {
   const res = await fetch(`${API_URL}/api/post-its`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ recuerdo_id: recuerdoId, texto, variante }),
+    body: JSON.stringify({ recuerdo_id: recuerdoId, ...datos }),
   })
   return res.json()
 }

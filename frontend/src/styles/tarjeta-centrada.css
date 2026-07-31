@@ -205,19 +205,24 @@
   width: 26%;
 }
 
-.tc-postits {
-  display: contents;
+.tc-postits-capa {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1500;
 }
 
 .postit {
-  align-self: flex-start;
+  position: fixed;
+  pointer-events: auto;
   width: 220px;
   min-height: 160px;
   padding: 1.1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
   box-shadow: 0 8px 24px rgba(43, 38, 32, 0.3);
+  cursor: grab;
 }
 
 .postit-gris {
@@ -235,13 +240,43 @@
   resize: none;
   font-family: var(--font-intima);
   font-style: italic;
-  font-size: 0.85rem;
+  font-weight: 300;
+  font-size: 1rem;
   line-height: 1.4;
   color: var(--color-tinta);
   padding: 0;
 }
 
 .postit-texto:focus {
+  outline: none;
+}
+
+.postit-coordenada {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-maquina);
+  font-size: 0.6rem;
+  color: var(--color-tinta);
+}
+
+.postit-coordenada::before {
+  content: '●';
+  color: var(--color-acento);
+  margin-right: 0.4em;
+  font-size: 0.65em;
+}
+
+.postit-lugar-fecha {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+  min-width: 0;
+}
+
+.postit-lugar-fecha:focus {
   outline: none;
 }
 

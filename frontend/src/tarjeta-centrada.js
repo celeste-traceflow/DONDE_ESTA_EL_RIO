@@ -145,6 +145,7 @@ function aplicarBordeEstampilla(el, radio = 7) {
 export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}) {
   let indice = indiceInicial
   let observadorRecuerdo = null
+  let abortArrastrePostits = null
 
   const overlay = document.createElement('div')
   overlay.className = 'tarjeta-centrada-overlay'
@@ -152,6 +153,7 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
 
   function cerrar() {
     observadorRecuerdo?.disconnect()
+    abortArrastrePostits?.abort()
     overlay.remove()
     onCerrar?.()
   }
@@ -191,9 +193,9 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
           <p>${escaparHtml(recuerdo.recuerdo_afectivo)}</p>
           <span class="marca-coordenada">${escaparHtml(recuerdo.lugar_y_fecha)}</span>
         </div>
-
-        <div class="tc-postits"></div>
       </div>
+
+      <div class="tc-postits-capa"></div>
 
       <button type="button" class="tc-flecha tc-flecha-der" title="Recuerdo siguiente">${svg(ICONO_FLECHA_DER, 22)}</button>
 
@@ -255,20 +257,28 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       })
     })
 
-    const contenedorPostits = overlay.querySelector('.tc-postits')
+    const contenedorPostits = overlay.querySelector('.tc-postits-capa')
     const botonNuevoPostit = overlay.querySelector('[data-accion="nuevo-postit"]')
     const botonEditarPostit = overlay.querySelector('[data-accion="editar-postit"]')
     let postits = []
     let postitEditandoId = null
     let modoEditarPostit = false
+    let arrastre = null
+
+    abortArrastrePostits?.abort()
+    abortArrastrePostits = new AbortController()
+    const { signal: señalArrastre } = abortArrastrePostits
 
     function renderizarPostits() {
       contenedorPostits.innerHTML = postits
         .map((p) => {
           const editando = p.id === postitEditandoId
           return `
-            <div class="postit postit-${p.variante}${editando ? ' editando' : ''}" data-id="${p.id}">
+            <div class="postit postit-${p.variante}${editando ? ' editando' : ''}" data-id="${p.id}" style="left: calc(50% + ${p.pos_x}px); top: calc(50% + ${p.pos_y}px);">
               <textarea class="postit-texto" ${editando ? '' : 'readonly'} placeholder="Escribí algo...">${escaparHtml(p.texto)}</textarea>
+              <label class="postit-coordenada">
+                <input type="text" class="postit-lugar-fecha" ${editando ? '' : 'readonly'} placeholder="Lugar y fecha" value="${escaparHtml(p.lugar_fecha || '')}">
+              </label>
               <div class="postit-controles">
                 <button type="button" class="postit-variante${p.variante === 'gris' ? ' activa' : ''}" data-variante="gris" title="Gris topo"></button>
                 <button type="button" class="postit-variante${p.variante === 'beige' ? ' activa' : ''}" data-variante="beige" title="Beige"></button>
@@ -282,13 +292,23 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       contenedorPostits.querySelectorAll('.postit').forEach((el) => {
         const id = Number(el.dataset.id)
         const textarea = el.querySelector('.postit-texto')
+        const inputLugarFecha = el.querySelector('.postit-lugar-fecha')
 
-        el.addEventListener('click', (e) => {
-          if (postitEditandoId === id || !modoEditarPostit) return
-          e.stopPropagation()
-          postitEditandoId = id
-          renderizarPostits()
-          contenedorPostits.querySelector(`.postit[data-id="${id}"] .postit-texto`)?.focus()
+        el.addEventListener('mousedown', (e) => {
+          if (e.target.closest('.postit-controles')) return
+          const campoEditable = e.target.closest('.postit-texto, .postit-lugar-fecha')
+          if (campoEditable && !campoEditable.readOnly) return
+          e.preventDefault()
+          const p = postits.find((x) => x.id === id)
+          arrastre = {
+            id,
+            el,
+            posX: p.pos_x,
+            posY: p.pos_y,
+            lastX: e.clientX,
+            lastY: e.clientY,
+            distancia: 0,
+          }
         })
 
         textarea.addEventListener('blur', () => {
@@ -297,6 +317,14 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
           const p = postits.find((x) => x.id === id)
           if (p) p.texto = nuevoTexto
           actualizarPostIt(id, { texto: nuevoTexto })
+        })
+
+        inputLugarFecha.addEventListener('blur', () => {
+          if (postitEditandoId !== id) return
+          const nuevoValor = inputLugarFecha.value
+          const p = postits.find((x) => x.id === id)
+          if (p) p.lugar_fecha = nuevoValor
+          actualizarPostIt(id, { lugar_fecha: nuevoValor })
         })
 
         el.querySelectorAll('.postit-variante').forEach((boton) => {
@@ -320,6 +348,47 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       })
     }
 
+    window.addEventListener(
+      'mousemove',
+      (e) => {
+        if (!arrastre) return
+        const dx = e.clientX - arrastre.lastX
+        const dy = e.clientY - arrastre.lastY
+        arrastre.distancia += Math.abs(dx) + Math.abs(dy)
+        arrastre.posX += dx
+        arrastre.posY += dy
+        arrastre.lastX = e.clientX
+        arrastre.lastY = e.clientY
+        arrastre.el.style.left = `calc(50% + ${arrastre.posX}px)`
+        arrastre.el.style.top = `calc(50% + ${arrastre.posY}px)`
+      },
+      { signal: señalArrastre }
+    )
+
+    window.addEventListener(
+      'mouseup',
+      () => {
+        if (!arrastre) return
+        const { id, posX, posY, distancia } = arrastre
+        if (distancia < 4) {
+          if (modoEditarPostit && postitEditandoId !== id) {
+            postitEditandoId = id
+            renderizarPostits()
+            contenedorPostits.querySelector(`.postit[data-id="${id}"] .postit-texto`)?.focus()
+          }
+        } else {
+          const p = postits.find((x) => x.id === id)
+          if (p) {
+            p.pos_x = posX
+            p.pos_y = posY
+          }
+          actualizarPostIt(id, { pos_x: posX, pos_y: posY })
+        }
+        arrastre = null
+      },
+      { signal: señalArrastre }
+    )
+
     obtenerPostIts(recuerdo.id).then((lista) => {
       postits = lista
       renderizarPostits()
@@ -327,7 +396,10 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
 
     botonNuevoPostit.addEventListener('click', async (e) => {
       e.stopPropagation()
-      const nuevo = await crearPostIt(recuerdo.id, '', 'gris')
+      const fotoRect = overlay.querySelector('.tc-foto').getBoundingClientRect()
+      const posX = fotoRect.left + 24 - window.innerWidth / 2
+      const posY = fotoRect.top + 24 - window.innerHeight / 2
+      const nuevo = await crearPostIt(recuerdo.id, { texto: '', variante: 'gris', pos_x: posX, pos_y: posY })
       postits.push(nuevo)
       postitEditandoId = nuevo.id
       renderizarPostits()
