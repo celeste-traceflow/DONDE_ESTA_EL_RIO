@@ -398,6 +398,9 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
   let distanciaMovida = 0
   let lastX = 0
   let lastY = 0
+  let velocidadX = 0
+  let velocidadY = 0
+  let ultimoMomento = 0
 
   const tarjetas = mundo.querySelectorAll('.tarjeta')
   const xInicialProfundidad = inicial.x
@@ -447,6 +450,25 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
     })
   }
 
+  // Inercia al soltar el arrastre: en vez de frenar en seco, la cámara sigue
+  // deslizando un poco y decae suave — evita que el Cauce se sienta "cortado".
+  function iniciarInercia(vx, vy) {
+    const miToken = ++animacionToken
+    let velX = vx
+    let velY = vy
+    const friccion = 0.94
+    function paso() {
+      if (miToken !== animacionToken) return
+      velX *= friccion
+      velY *= friccion
+      x += velX * 16
+      y += velY * 16
+      aplicar()
+      if (Math.abs(velX) > 0.02 || Math.abs(velY) > 0.02) requestAnimationFrame(paso)
+    }
+    requestAnimationFrame(paso)
+  }
+
   function zoomHacia(cursorX, cursorY, factor) {
     const worldX = (cursorX - x) / scale
     const worldY = (cursorY - y) / scale
@@ -457,8 +479,12 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
   }
 
   viewport.addEventListener('mousedown', (e) => {
+    animacionToken++ // corta cualquier inercia o paneo animado en curso
     lastX = e.clientX
     lastY = e.clientY
+    ultimoMomento = performance.now()
+    velocidadX = 0
+    velocidadY = 0
     distanciaMovida = 0
 
     const tirador = e.target.closest('.resize-handle')
@@ -504,6 +530,11 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
     }
 
     if (!arrastrandoMundo) return
+    const ahora = performance.now()
+    const dt = Math.max(1, ahora - ultimoMomento)
+    velocidadX = (e.clientX - lastX) / dt
+    velocidadY = (e.clientY - lastY) / dt
+    ultimoMomento = ahora
     x += e.clientX - lastX
     y += e.clientY - lastY
     lastX = e.clientX
@@ -524,6 +555,9 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
       }
       tarjetaArrastrada.classList.remove('arrastrando')
       tarjetaArrastrada = null
+    }
+    if (arrastrandoMundo && (Math.abs(velocidadX) > 0.02 || Math.abs(velocidadY) > 0.02)) {
+      iniciarInercia(velocidadX, velocidadY)
     }
     arrastrandoMundo = false
     viewport.classList.remove('arrastrando')
