@@ -34,6 +34,12 @@ export async function guardarEmbedding(tipo, itemId, vector) {
   })
 }
 
+export async function obtenerPostItsConteo() {
+  const res = await fetch(`${API_URL}/api/post-its-conteo`)
+  if (!res.ok) return {}
+  return res.json()
+}
+
 export async function obtenerPostIts(recuerdoId) {
   const res = await fetch(`${API_URL}/api/post-its/${recuerdoId}`)
   if (!res.ok) return []

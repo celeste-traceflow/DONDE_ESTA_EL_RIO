@@ -1,7 +1,7 @@
 import layoutInicial from './layout-inicial.json'
 import { abrirTarjetaCentrada } from './tarjeta-centrada.js'
 import { sincronizarEmbeddingsYConexiones } from './conexiones.js'
-import { obtenerConexiones } from './api.js'
+import { obtenerConexiones, obtenerTodosTagsEstado, obtenerPostItsConteo } from './api.js'
 import { crearCapaLazos, dibujarLazos } from './lazos.js'
 
 // Qué fracción del ancho/alto de una tarjeta avanza el cursor de la cascada en cada paso.
@@ -9,6 +9,34 @@ import { crearCapaLazos, dibujarLazos } from './lazos.js'
 const AVANCE_RATIO = 0.8
 
 const CLAVE_POSICIONES = 'rio-cauce-posiciones'
+
+// Profundidad ligada al sedimento: cuanto más se tocó una tarjeta (conexiones,
+// subrayados/tachados, post-its), más "cerca" se siente — se mueve un poco más
+// que el resto al hacer pan/zoom, en vez de que todo el cauce se desplace
+// como un plano único.
+const TOPE_SEDIMENTO = 6
+const AMPLITUD_PROFUNDIDAD = 0.15
+
+function calcularProfundidades(layout, conexiones, tagsEstado, postItsConteo) {
+  const conteoConexiones = new Map()
+  for (const c of conexiones) {
+    const claveA = `${c.tipo_a}-${c.id_a}`
+    const claveB = `${c.tipo_b}-${c.id_b}`
+    conteoConexiones.set(claveA, (conteoConexiones.get(claveA) || 0) + 1)
+    conteoConexiones.set(claveB, (conteoConexiones.get(claveB) || 0) + 1)
+  }
+
+  const profundidades = new Map()
+  for (const item of layout) {
+    const clave = `${item.tipo}-${item.data.id}`
+    const conexionesCard = conteoConexiones.get(clave) || 0
+    const tagsCard = item.tipo === 'recuerdo' ? Object.keys(tagsEstado[item.data.id] || {}).length : 0
+    const postItsCard = item.tipo === 'recuerdo' ? postItsConteo[item.data.id] || 0 : 0
+    const sedimento = conexionesCard + tagsCard + postItsCard
+    profundidades.set(clave, 1 + (Math.min(sedimento, TOPE_SEDIMENTO) / TOPE_SEDIMENTO) * AMPLITUD_PROFUNDIDAD)
+  }
+  return profundidades
+}
 
 function iconoConexionesSvg() {
   return `
@@ -108,10 +136,11 @@ export function renderCauce(container, { recuerdos, citas }) {
     })
   }
 
-  obtenerConexiones()
-    .then((c) => {
-      conexionesCache = c
+  Promise.all([obtenerConexiones(), obtenerTodosTagsEstado(), obtenerPostItsConteo()])
+    .then(([conexiones, tagsEstado, postItsConteo]) => {
+      conexionesCache = conexiones
       refrescarLazos()
+      controles.setProfundidades(calcularProfundidades(layout, conexiones, tagsEstado, postItsConteo))
     })
     .catch((err) => console.error('[conexiones] error cargando', err))
 
@@ -273,6 +302,7 @@ function crearTarjeta(item) {
   el.className = `tarjeta tarjeta-${item.tipo}`
   el.dataset.tipo = item.tipo
   el.dataset.id = item.data.id
+  el.dataset.rotacion = item.rotacion
   el.style.left = `${item.x}px`
   el.style.top = `${item.y}px`
   el.style.width = `${item.ancho}px`
@@ -364,8 +394,25 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
   let lastX = 0
   let lastY = 0
 
+  const tarjetas = mundo.querySelectorAll('.tarjeta')
+  const xInicialProfundidad = inicial.x
+  const yInicialProfundidad = inicial.y
+  let profundidades = new Map()
+
+  function aplicarProfundidad() {
+    const deltaX = x - xInicialProfundidad
+    const deltaY = y - yInicialProfundidad
+    tarjetas.forEach((el) => {
+      const factor = profundidades.get(`${el.dataset.tipo}-${el.dataset.id}`) ?? 1
+      const offsetX = factor === 1 ? 0 : (deltaX * (factor - 1)) / scale
+      const offsetY = factor === 1 ? 0 : (deltaY * (factor - 1)) / scale
+      el.style.transform = `translate(${offsetX}px, ${offsetY}px) translate(-50%, -50%) rotate(${el.dataset.rotacion}deg)`
+    })
+  }
+
   function aplicar() {
     mundo.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
+    aplicarProfundidad()
   }
 
   let animacionToken = 0
@@ -506,6 +553,10 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
       const targetX = cursorX - worldX * scale
       const targetY = cursorY - worldY * scale
       return animarCamara(targetX, targetY)
+    },
+    setProfundidades(mapa) {
+      profundidades = mapa
+      aplicarProfundidad()
     },
   }
 }

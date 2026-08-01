@@ -128,6 +128,17 @@ app.post("/api/conexiones", (req, res) => {
   }
 });
 
+app.get("/api/post-its-conteo", (req, res) => {
+  try {
+    const filas = db.prepare("select recuerdo_id, count(*) as n from post_its group by recuerdo_id").all();
+    const porRecuerdo = {};
+    for (const f of filas) porRecuerdo[f.recuerdo_id] = f.n;
+    res.json(porRecuerdo);
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
 app.get("/api/post-its/:recuerdoId", (req, res) => {
   try {
     const filas = db
