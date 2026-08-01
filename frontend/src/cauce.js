@@ -15,7 +15,7 @@ const CLAVE_POSICIONES = 'rio-cauce-posiciones'
 // que el resto al hacer pan/zoom, en vez de que todo el cauce se desplace
 // como un plano único.
 const TOPE_SEDIMENTO = 6
-const AMPLITUD_PROFUNDIDAD = 0.15
+const AMPLITUD_PROFUNDIDAD = 0.25
 
 function calcularProfundidades(layout, conexiones, tagsEstado, postItsConteo) {
   const conteoConexiones = new Map()
@@ -116,7 +116,12 @@ export function renderCauce(container, { recuerdos, citas }) {
     const [tipo, id] = clave.split('-')
     const el = mundo.querySelector(`[data-tipo="${tipo}"][data-id="${id}"]`)
     if (!el) return null
-    return { x: parseFloat(el.style.left), y: parseFloat(el.style.top) }
+    // Suma el corrimiento de profundidad (parallax) — sin esto, el lazo queda
+    // apuntando a donde estaría la tarjeta sin ese efecto, no a donde se ve.
+    return {
+      x: parseFloat(el.style.left) + (parseFloat(el.dataset.offsetX) || 0),
+      y: parseFloat(el.style.top) + (parseFloat(el.dataset.offsetY) || 0),
+    }
   }
 
   let conexionesCache = []
@@ -406,6 +411,8 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
       const factor = profundidades.get(`${el.dataset.tipo}-${el.dataset.id}`) ?? 1
       const offsetX = factor === 1 ? 0 : (deltaX * (factor - 1)) / scale
       const offsetY = factor === 1 ? 0 : (deltaY * (factor - 1)) / scale
+      el.dataset.offsetX = offsetX
+      el.dataset.offsetY = offsetY
       el.style.transform = `translate(${offsetX}px, ${offsetY}px) translate(-50%, -50%) rotate(${el.dataset.rotacion}deg)`
     })
   }
@@ -413,6 +420,10 @@ function activarPanZoom(viewport, mundo, inicial, layout, onClickTarjeta, onArra
   function aplicar() {
     mundo.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
     aplicarProfundidad()
+    // El desplazamiento de profundidad mueve la tarjeta lejos de su posición
+    // "cruda" (left/top); si hay lazos visibles, hay que recalcularlos en el
+    // mismo momento o quedan apuntando al lugar viejo.
+    onArrastrarTarjeta?.()
   }
 
   let animacionToken = 0
