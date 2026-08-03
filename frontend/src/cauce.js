@@ -3,6 +3,7 @@ import { abrirTarjetaCentrada } from './tarjeta-centrada.js'
 import { sincronizarEmbeddingsYConexiones } from './conexiones.js'
 import { obtenerConexiones, obtenerTodosTagsEstado, obtenerPostItsConteo } from './api.js'
 import { crearCapaLazos, dibujarLazos } from './lazos.js'
+import { crearMapaFondo } from './mapa-fondo.js'
 
 // Qué fracción del ancho/alto de una tarjeta avanza el cursor de la cascada en cada paso.
 // 0.8 = cada tarjeta nueva se solapa ~20% con la anterior (se ve la mayor parte de cada una).
@@ -100,6 +101,9 @@ export function renderCauce(container, { recuerdos, citas }) {
   `
   const viewport = container.querySelector('.cauce-viewport')
   const mundo = container.querySelector('.cauce-mundo')
+
+  const { minX, maxX, minY, maxY } = limites(layout)
+  mundo.appendChild(crearMapaFondo(minX, maxX, minY, maxY))
 
   const capaLazos = crearCapaLazos()
   mundo.appendChild(capaLazos)
