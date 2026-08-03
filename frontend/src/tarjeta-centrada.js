@@ -285,7 +285,7 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
             ? `
               <button type="button" class="postit-variante${p.variante === 'gris' ? ' activa' : ''}" data-variante="gris" title="Gris topo"></button>
               <button type="button" class="postit-variante${p.variante === 'beige' ? ' activa' : ''}" data-variante="beige" title="Beige"></button>
-              <button type="button" class="postit-variante${p.variante === 'piedra' ? ' activa' : ''}" data-variante="piedra" title="Piedra"></button>
+              <button type="button" class="postit-variante${p.variante === 'piedra' ? ' activa' : ''}" data-variante="piedra" title="Musgo"></button>
             `
             : ''
           return `
