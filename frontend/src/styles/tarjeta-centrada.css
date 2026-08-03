@@ -330,8 +330,7 @@
   display: flex;
 }
 
-.postit-editar,
-.postit-borrar {
+.postit-editar {
   margin-left: auto;
 }
 

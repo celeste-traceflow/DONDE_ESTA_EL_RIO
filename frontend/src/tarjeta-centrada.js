@@ -271,6 +271,7 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
     let postits = []
     let postitEditandoId = null
     let arrastre = null
+    let contadorBorrador = 0
 
     abortArrastrePostits?.abort()
     abortArrastrePostits = new AbortController()
@@ -280,22 +281,25 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       contenedorPostits.innerHTML = postits
         .map((p) => {
           const editando = p.id === postitEditandoId
-          const controles = editando
+          const swatches = editando
             ? `
               <button type="button" class="postit-variante${p.variante === 'gris' ? ' activa' : ''}" data-variante="gris" title="Gris topo"></button>
               <button type="button" class="postit-variante${p.variante === 'beige' ? ' activa' : ''}" data-variante="beige" title="Beige"></button>
               <button type="button" class="postit-variante${p.variante === 'piedra' ? ' activa' : ''}" data-variante="piedra" title="Piedra"></button>
-              <button type="button" class="postit-guardar" title="Guardar cambios">${svg(ICONO_GUARDAR_POSTIT, 14)}</button>
-              <button type="button" class="postit-borrar" title="Borrar post-it">${svg(ICONO_BORRAR_POSTIT, 14)}</button>
             `
-            : `<button type="button" class="postit-editar" title="Editar">${svg(ICONO_EDITAR_POSTIT, 14)}</button>`
+            : ''
           return `
             <div class="postit postit-${p.variante}${editando ? ' editando' : ''}" data-id="${p.id}" style="left: calc(50% + ${p.pos_x}px); top: calc(50% + ${p.pos_y}px);">
               <textarea class="postit-texto" ${editando ? '' : 'readonly'} placeholder="Escribí algo...">${escaparHtml(p.texto)}</textarea>
               <label class="postit-coordenada">
                 <input type="text" class="postit-lugar-fecha" ${editando ? '' : 'readonly'} placeholder="Lugar y fecha" value="${escaparHtml(p.lugar_fecha || '')}">
               </label>
-              <div class="postit-controles">${controles}</div>
+              <div class="postit-controles">
+                ${swatches}
+                <button type="button" class="postit-editar" title="Editar">${svg(ICONO_EDITAR_POSTIT, 14)}</button>
+                <button type="button" class="postit-guardar" title="Guardar cambios">${svg(ICONO_GUARDAR_POSTIT, 14)}</button>
+                <button type="button" class="postit-borrar" title="Borrar post-it">${svg(ICONO_BORRAR_POSTIT, 14)}</button>
+              </div>
             </div>
           `
         })
@@ -333,17 +337,31 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
           contenedorPostits.querySelector(`.postit[data-id="${id}"] .postit-texto`)?.focus()
         })
 
-        el.querySelector('.postit-guardar')?.addEventListener('click', (e) => {
+        el.querySelector('.postit-guardar')?.addEventListener('click', async (e) => {
           e.stopPropagation()
           const nuevoTexto = textarea.value
           const nuevoLugarFecha = inputLugarFecha.value
           const p = postits.find((x) => x.id === id)
-          if (p) {
-            p.texto = nuevoTexto
-            p.lugar_fecha = nuevoLugarFecha
+          if (!p) return
+          p.texto = nuevoTexto
+          p.lugar_fecha = nuevoLugarFecha
+
+          if (p.esBorrador) {
+            // Recién ahora, al guardar, el post-it pasa a existir de verdad.
+            const creado = await crearPostIt(recuerdo.id, {
+              texto: nuevoTexto,
+              variante: p.variante,
+              lugar_fecha: nuevoLugarFecha,
+              pos_x: p.pos_x,
+              pos_y: p.pos_y,
+            })
+            const indice = postits.indexOf(p)
+            postits[indice] = creado
+            postitEditandoId = null
+          } else {
+            actualizarPostIt(id, { texto: nuevoTexto, lugar_fecha: nuevoLugarFecha })
+            postitEditandoId = null
           }
-          actualizarPostIt(id, { texto: nuevoTexto, lugar_fecha: nuevoLugarFecha })
-          postitEditandoId = null
           renderizarPostits()
         })
 
@@ -353,16 +371,19 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
             const variante = boton.dataset.variante
             const p = postits.find((x) => x.id === id)
             if (p) p.variante = variante
-            actualizarPostIt(id, { variante })
+            // Un borrador todavía no existe en el backend — el color elegido
+            // recién se manda cuando se guarde por primera vez.
+            if (!p?.esBorrador) actualizarPostIt(id, { variante })
             renderizarPostits()
           })
         })
 
         el.querySelector('.postit-borrar')?.addEventListener('click', (e) => {
           e.stopPropagation()
+          const p = postits.find((x) => x.id === id)
           postits = postits.filter((x) => x.id !== id)
           if (postitEditandoId === id) postitEditandoId = null
-          borrarPostIt(id)
+          if (!p?.esBorrador) borrarPostIt(id)
           renderizarPostits()
         })
       })
@@ -395,8 +416,8 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
           if (p) {
             p.pos_x = posX
             p.pos_y = posY
+            if (!p.esBorrador) actualizarPostIt(id, { pos_x: posX, pos_y: posY })
           }
-          actualizarPostIt(id, { pos_x: posX, pos_y: posY })
         }
         arrastre = null
       },
@@ -408,16 +429,27 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       renderizarPostits()
     })
 
-    botonNuevoPostit.addEventListener('click', async (e) => {
+    botonNuevoPostit.addEventListener('click', (e) => {
       e.stopPropagation()
       const fotoRect = overlay.querySelector('.tc-foto').getBoundingClientRect()
       const posX = fotoRect.left + 24 - window.innerWidth / 2
       const posY = fotoRect.top + 24 - window.innerHeight / 2
-      const nuevo = await crearPostIt(recuerdo.id, { texto: '', variante: 'gris', pos_x: posX, pos_y: posY })
-      postits.push(nuevo)
-      postitEditandoId = nuevo.id
+      // Todavía no existe en el backend: es solo un borrador en pantalla
+      // hasta que se toque "guardar" por primera vez.
+      contadorBorrador -= 1
+      const borrador = {
+        id: contadorBorrador,
+        texto: '',
+        variante: 'gris',
+        lugar_fecha: '',
+        pos_x: posX,
+        pos_y: posY,
+        esBorrador: true,
+      }
+      postits.push(borrador)
+      postitEditandoId = borrador.id
       renderizarPostits()
-      contenedorPostits.querySelector(`.postit[data-id="${nuevo.id}"] .postit-texto`)?.focus()
+      contenedorPostits.querySelector(`.postit[data-id="${borrador.id}"] .postit-texto`)?.focus()
     })
 
     const recuerdoEl = overlay.querySelector('.tc-recuerdo')
