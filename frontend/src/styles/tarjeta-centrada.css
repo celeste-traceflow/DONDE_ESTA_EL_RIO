@@ -286,14 +286,10 @@
 }
 
 .postit-controles {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.5rem;
-}
-
-.postit.editando .postit-controles {
-  display: flex;
 }
 
 .postit-variante {
@@ -322,8 +318,9 @@
   border-width: 2px;
 }
 
+.postit-editar,
+.postit-guardar,
 .postit-borrar {
-  margin-left: auto;
   background: none;
   border: none;
   cursor: pointer;
@@ -333,6 +330,13 @@
   display: flex;
 }
 
+.postit-editar,
+.postit-borrar {
+  margin-left: auto;
+}
+
+.postit-editar:hover,
+.postit-guardar:hover,
 .postit-borrar:hover {
   opacity: 1;
 }

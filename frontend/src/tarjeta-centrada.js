@@ -90,11 +90,15 @@ const ICONO_NUEVO_POSTIT = `
 `
 
 const ICONO_EDITAR_POSTIT = `
-  <path fill="none" stroke="#ede5d3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.17" d="M79.67,29.12h0c0-.7-.28-1.38-.78-1.88l-6.14-6.14c-.5-.5-1.17-.78-1.88-.78h0c-.7,0-1.38.28-1.88.78l-22.3,22.3v9.89h9.89l22.3-22.3c.5-.5.78-1.17.78-1.88Z"/>
-  <line fill="none" stroke="#ede5d3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.17" x1="64.84" y1="25.27" x2="74.73" y2="35.16"/>
-  <polyline fill="none" stroke="#ede5d3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.17" points="25.82 41.21 32.42 41.21 32.42 30.22 20.33 41.21"/>
-  <line fill="none" stroke="#ede5d3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.17" x1="32.42" y1="30.22" x2="53.3" y2="30.22"/>
-  <polyline fill="none" stroke="#ede5d3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.17" points="69.78 46.7 69.78 79.67 20.33 79.67 20.33 41.21"/>
+  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" d="M79.67,29.12h0c0-.7-.28-1.38-.78-1.88l-6.14-6.14c-.5-.5-1.17-.78-1.88-.78h0c-.7,0-1.38.28-1.88.78l-22.3,22.3v9.89h9.89l22.3-22.3c.5-.5.78-1.17.78-1.88Z"/>
+  <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" x1="64.84" y1="25.27" x2="74.73" y2="35.16"/>
+  <polyline fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" points="25.82 41.21 32.42 41.21 32.42 30.22 20.33 41.21"/>
+  <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" x1="32.42" y1="30.22" x2="53.3" y2="30.22"/>
+  <polyline fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.13" points="69.78 46.7 69.78 79.67 20.33 79.67 20.33 41.21"/>
+`
+
+const ICONO_GUARDAR_POSTIT = `
+  <polyline fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" points="20 52 42 74 82 26"/>
 `
 
 const ICONO_BORRAR_POSTIT = `
@@ -209,8 +213,6 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       <div class="tc-menu-operativo">
         <button type="button" data-accion="nuevo-postit" title="Nuevo post-it">${svg(ICONO_NUEVO_POSTIT, 30)}</button>
         <span class="tc-menu-separador"></span>
-        <button type="button" data-accion="editar-postit" title="Editar post-it">${svg(ICONO_EDITAR_POSTIT, 30)}</button>
-        <span class="tc-menu-separador"></span>
         <button type="button" title="Nueva cita teórica (próximamente)">${svg(ICONO_NUEVA_CITA, 30)}</button>
       </div>
     `
@@ -266,10 +268,8 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
 
     const contenedorPostits = overlay.querySelector('.tc-postits-capa')
     const botonNuevoPostit = overlay.querySelector('[data-accion="nuevo-postit"]')
-    const botonEditarPostit = overlay.querySelector('[data-accion="editar-postit"]')
     let postits = []
     let postitEditandoId = null
-    let modoEditarPostit = false
     let arrastre = null
 
     abortArrastrePostits?.abort()
@@ -280,18 +280,22 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       contenedorPostits.innerHTML = postits
         .map((p) => {
           const editando = p.id === postitEditandoId
+          const controles = editando
+            ? `
+              <button type="button" class="postit-variante${p.variante === 'gris' ? ' activa' : ''}" data-variante="gris" title="Gris topo"></button>
+              <button type="button" class="postit-variante${p.variante === 'beige' ? ' activa' : ''}" data-variante="beige" title="Beige"></button>
+              <button type="button" class="postit-variante${p.variante === 'piedra' ? ' activa' : ''}" data-variante="piedra" title="Piedra"></button>
+              <button type="button" class="postit-guardar" title="Guardar cambios">${svg(ICONO_GUARDAR_POSTIT, 14)}</button>
+              <button type="button" class="postit-borrar" title="Borrar post-it">${svg(ICONO_BORRAR_POSTIT, 14)}</button>
+            `
+            : `<button type="button" class="postit-editar" title="Editar">${svg(ICONO_EDITAR_POSTIT, 14)}</button>`
           return `
             <div class="postit postit-${p.variante}${editando ? ' editando' : ''}" data-id="${p.id}" style="left: calc(50% + ${p.pos_x}px); top: calc(50% + ${p.pos_y}px);">
               <textarea class="postit-texto" ${editando ? '' : 'readonly'} placeholder="Escribí algo...">${escaparHtml(p.texto)}</textarea>
               <label class="postit-coordenada">
                 <input type="text" class="postit-lugar-fecha" ${editando ? '' : 'readonly'} placeholder="Lugar y fecha" value="${escaparHtml(p.lugar_fecha || '')}">
               </label>
-              <div class="postit-controles">
-                <button type="button" class="postit-variante${p.variante === 'gris' ? ' activa' : ''}" data-variante="gris" title="Gris topo"></button>
-                <button type="button" class="postit-variante${p.variante === 'beige' ? ' activa' : ''}" data-variante="beige" title="Beige"></button>
-                <button type="button" class="postit-variante${p.variante === 'piedra' ? ' activa' : ''}" data-variante="piedra" title="Piedra"></button>
-                <button type="button" class="postit-borrar" title="Borrar post-it">${svg(ICONO_BORRAR_POSTIT, 14)}</button>
-              </div>
+              <div class="postit-controles">${controles}</div>
             </div>
           `
         })
@@ -322,20 +326,25 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
           }
         })
 
-        textarea.addEventListener('blur', () => {
-          if (postitEditandoId !== id) return
-          const nuevoTexto = textarea.value
-          const p = postits.find((x) => x.id === id)
-          if (p) p.texto = nuevoTexto
-          actualizarPostIt(id, { texto: nuevoTexto })
+        el.querySelector('.postit-editar')?.addEventListener('click', (e) => {
+          e.stopPropagation()
+          postitEditandoId = id
+          renderizarPostits()
+          contenedorPostits.querySelector(`.postit[data-id="${id}"] .postit-texto`)?.focus()
         })
 
-        inputLugarFecha.addEventListener('blur', () => {
-          if (postitEditandoId !== id) return
-          const nuevoValor = inputLugarFecha.value
+        el.querySelector('.postit-guardar')?.addEventListener('click', (e) => {
+          e.stopPropagation()
+          const nuevoTexto = textarea.value
+          const nuevoLugarFecha = inputLugarFecha.value
           const p = postits.find((x) => x.id === id)
-          if (p) p.lugar_fecha = nuevoValor
-          actualizarPostIt(id, { lugar_fecha: nuevoValor })
+          if (p) {
+            p.texto = nuevoTexto
+            p.lugar_fecha = nuevoLugarFecha
+          }
+          actualizarPostIt(id, { texto: nuevoTexto, lugar_fecha: nuevoLugarFecha })
+          postitEditandoId = null
+          renderizarPostits()
         })
 
         el.querySelectorAll('.postit-variante').forEach((boton) => {
@@ -349,7 +358,7 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
           })
         })
 
-        el.querySelector('.postit-borrar').addEventListener('click', (e) => {
+        el.querySelector('.postit-borrar')?.addEventListener('click', (e) => {
           e.stopPropagation()
           postits = postits.filter((x) => x.id !== id)
           if (postitEditandoId === id) postitEditandoId = null
@@ -381,13 +390,7 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       () => {
         if (!arrastre) return
         const { id, posX, posY, distancia } = arrastre
-        if (distancia < 4) {
-          if (modoEditarPostit && postitEditandoId !== id) {
-            postitEditandoId = id
-            renderizarPostits()
-            contenedorPostits.querySelector(`.postit[data-id="${id}"] .postit-texto`)?.focus()
-          }
-        } else {
+        if (distancia >= 4) {
           const p = postits.find((x) => x.id === id)
           if (p) {
             p.pos_x = posX
@@ -415,16 +418,6 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       postitEditandoId = nuevo.id
       renderizarPostits()
       contenedorPostits.querySelector(`.postit[data-id="${nuevo.id}"] .postit-texto`)?.focus()
-    })
-
-    botonEditarPostit.addEventListener('click', (e) => {
-      e.stopPropagation()
-      modoEditarPostit = !modoEditarPostit
-      botonEditarPostit.classList.toggle('activo', modoEditarPostit)
-      if (!modoEditarPostit) {
-        postitEditandoId = null
-        renderizarPostits()
-      }
     })
 
     const recuerdoEl = overlay.querySelector('.tc-recuerdo')
