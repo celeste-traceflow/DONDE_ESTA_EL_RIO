@@ -32,9 +32,9 @@
 
 .mapa-fondo-linea {
   fill: none;
-  stroke: #3d453a;
-  stroke-width: 1;
-  opacity: 0.16;
+  stroke: #5c6650;
+  stroke-width: 1.4;
+  opacity: 0.4;
 }
 
 .capa-lazos {
