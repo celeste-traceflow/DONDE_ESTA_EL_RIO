@@ -18,6 +18,8 @@ create table if not exists citas_usuario (
   autor text,
   fuente text,
   recuerdo_cercano_id integer,
+  pos_x real not null default 0,
+  pos_y real not null default 0,
   creado_en text not null default (datetime('now'))
 );
 

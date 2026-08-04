@@ -67,6 +67,33 @@ export async function borrarPostIt(id) {
   await fetch(`${API_URL}/api/post-its/${id}`, { method: "DELETE" })
 }
 
+export async function obtenerCitasUsuario(recuerdoId) {
+  const res = await fetch(`${API_URL}/api/citas-usuario/${recuerdoId}`)
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function crearCitaUsuario(recuerdoId, datos = {}) {
+  const res = await fetch(`${API_URL}/api/citas-usuario`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ recuerdo_cercano_id: recuerdoId, ...datos }),
+  })
+  return res.json()
+}
+
+export async function actualizarCitaUsuario(id, cambios) {
+  await fetch(`${API_URL}/api/citas-usuario/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cambios),
+  })
+}
+
+export async function borrarCitaUsuario(id) {
+  await fetch(`${API_URL}/api/citas-usuario/${id}`, { method: "DELETE" })
+}
+
 export async function obtenerConexiones() {
   const res = await fetch(`${API_URL}/api/conexiones`)
   if (!res.ok) return []

@@ -340,6 +340,110 @@
   opacity: 1;
 }
 
+.tc-citas-capa {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1500;
+}
+
+.cita {
+  position: fixed;
+  pointer-events: auto;
+  width: 220px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(43, 38, 32, 0.3);
+  cursor: grab;
+}
+
+.cita-usuario {
+  background: var(--color-cita);
+  color: var(--color-tinta);
+}
+
+.cita-comillas {
+  display: flex;
+  align-items: flex-start;
+}
+
+.cita-comilla {
+  font-family: var(--font-autorial);
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.cita-texto {
+  flex: none;
+  width: 100%;
+  border: none;
+  background: transparent;
+  resize: none;
+  overflow: hidden;
+  font-family: var(--font-autorial);
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: var(--color-tinta);
+  padding: 0 0.15rem;
+  margin: 0;
+}
+
+.cita-texto:focus {
+  outline: none;
+}
+
+.cita-autor {
+  margin-top: 0.6rem;
+  border: none;
+  background: transparent;
+  font-family: var(--font-maquina);
+  font-size: 0.62rem;
+  color: var(--color-tinta);
+  padding: 0;
+}
+
+.cita-autor:focus {
+  outline: none;
+}
+
+.cita-autor::placeholder,
+.cita-texto::placeholder {
+  color: var(--color-tinta);
+  opacity: 0.55;
+}
+
+.cita-controles {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.cita-editar,
+.cita-guardar,
+.cita-borrar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-tinta);
+  opacity: 0.6;
+  padding: 0;
+  display: flex;
+}
+
+.cita-editar {
+  margin-left: auto;
+}
+
+.cita-editar:hover,
+.cita-guardar:hover,
+.cita-borrar:hover {
+  opacity: 1;
+}
+
 .tc-menu-operativo {
   position: fixed;
   bottom: 1.5rem;

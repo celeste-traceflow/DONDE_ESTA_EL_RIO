@@ -1,4 +1,15 @@
-import { obtenerTagsEstado, guardarTagEstado, obtenerPostIts, crearPostIt, actualizarPostIt, borrarPostIt } from './api.js'
+import {
+  obtenerTagsEstado,
+  guardarTagEstado,
+  obtenerPostIts,
+  crearPostIt,
+  actualizarPostIt,
+  borrarPostIt,
+  obtenerCitasUsuario,
+  crearCitaUsuario,
+  actualizarCitaUsuario,
+  borrarCitaUsuario,
+} from './api.js'
 import { actualizarEmbeddingRecuerdo } from './conexiones.js'
 
 const CATEGORIAS_TAGS = [
@@ -207,13 +218,14 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       </div>
 
       <div class="tc-postits-capa"></div>
+      <div class="tc-citas-capa"></div>
 
       <button type="button" class="tc-flecha tc-flecha-der" title="Recuerdo siguiente">${svg(ICONO_FLECHA_DER, 22)}</button>
 
       <div class="tc-menu-operativo">
         <button type="button" data-accion="nuevo-postit" title="Nuevo post-it">${svg(ICONO_NUEVO_POSTIT, 30)}</button>
         <span class="tc-menu-separador"></span>
-        <button type="button" title="Nueva cita teórica (próximamente)">${svg(ICONO_NUEVA_CITA, 30)}</button>
+        <button type="button" data-accion="nueva-cita" title="Nueva cita teórica">${svg(ICONO_NUEVA_CITA, 30)}</button>
       </div>
     `
 
@@ -268,8 +280,13 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
 
     const contenedorPostits = overlay.querySelector('.tc-postits-capa')
     const botonNuevoPostit = overlay.querySelector('[data-accion="nuevo-postit"]')
+    const contenedorCitas = overlay.querySelector('.tc-citas-capa')
+    const botonNuevaCita = overlay.querySelector('[data-accion="nueva-cita"]')
     let postits = []
     let postitEditandoId = null
+    let citas = []
+    let citaEditandoId = null
+    let contadorBorradorCita = 0
     let arrastre = null
     let contadorBorrador = 0
 
@@ -320,6 +337,7 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
           e.preventDefault()
           const p = postits.find((x) => x.id === id)
           arrastre = {
+            tipo: 'postit',
             id,
             el,
             posX: p.pos_x,
@@ -389,6 +407,106 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       })
     }
 
+    // Misma lógica que el post-it (borrador hasta guardar, editar/guardar/
+    // eliminar siempre presentes) — las únicas diferencias son el texto
+    // siempre entre comillas y el autor obligatorio para poder guardar.
+    function renderizarCitas() {
+      contenedorCitas.innerHTML = citas
+        .map((c) => {
+          const editando = c.id === citaEditandoId
+          const controles = editando
+            ? `
+              <button type="button" class="cita-guardar" title="Guardar cambios">${svg(ICONO_GUARDAR_POSTIT, 14)}</button>
+              <button type="button" class="cita-borrar" title="Borrar cita">${svg(ICONO_BORRAR_POSTIT, 14)}</button>
+            `
+            : `<button type="button" class="cita-editar" title="Editar">${svg(ICONO_EDITAR_POSTIT, 14)}</button>`
+          return `
+            <div class="cita cita-usuario${editando ? ' editando' : ''}" data-id="${c.id}" style="left: calc(50% + ${c.pos_x}px); top: calc(50% + ${c.pos_y}px);">
+              <div class="cita-comillas">
+                <span class="cita-comilla">"</span><textarea class="cita-texto" ${editando ? '' : 'readonly'} placeholder="Escribí la cita...">${escaparHtml(c.texto)}</textarea><span class="cita-comilla">"</span>
+              </div>
+              <input type="text" class="cita-autor" ${editando ? '' : 'readonly'} placeholder="Autor" value="${escaparHtml(c.autor || '')}">
+              <div class="cita-controles">${controles}</div>
+            </div>
+          `
+        })
+        .join('')
+
+      contenedorCitas.querySelectorAll('.cita').forEach((el) => {
+        const id = Number(el.dataset.id)
+        const textarea = el.querySelector('.cita-texto')
+        const inputAutor = el.querySelector('.cita-autor')
+
+        ajustarAlturaTexto(textarea)
+        textarea.addEventListener('input', () => ajustarAlturaTexto(textarea))
+
+        el.addEventListener('mousedown', (e) => {
+          if (e.target.closest('.cita-controles')) return
+          const campoEditable = e.target.closest('.cita-texto, .cita-autor')
+          if (campoEditable && !campoEditable.readOnly) return
+          e.preventDefault()
+          const c = citas.find((x) => x.id === id)
+          arrastre = {
+            tipo: 'cita',
+            id,
+            el,
+            posX: c.pos_x,
+            posY: c.pos_y,
+            lastX: e.clientX,
+            lastY: e.clientY,
+            distancia: 0,
+          }
+        })
+
+        el.querySelector('.cita-editar')?.addEventListener('click', (e) => {
+          e.stopPropagation()
+          citaEditandoId = id
+          renderizarCitas()
+          contenedorCitas.querySelector(`.cita[data-id="${id}"] .cita-texto`)?.focus()
+        })
+
+        el.querySelector('.cita-guardar')?.addEventListener('click', async (e) => {
+          e.stopPropagation()
+          const nuevoTexto = textarea.value.trim()
+          const nuevoAutor = inputAutor.value.trim()
+          if (!nuevoAutor) {
+            inputAutor.focus()
+            return
+          }
+          const c = citas.find((x) => x.id === id)
+          if (!c) return
+          c.texto = nuevoTexto
+          c.autor = nuevoAutor
+
+          if (c.esBorrador) {
+            // Recién ahora, al guardar, la cita pasa a existir de verdad.
+            const creada = await crearCitaUsuario(recuerdo.id, {
+              texto: nuevoTexto,
+              autor: nuevoAutor,
+              pos_x: c.pos_x,
+              pos_y: c.pos_y,
+            })
+            const indice = citas.indexOf(c)
+            citas[indice] = creada
+            citaEditandoId = null
+          } else {
+            await actualizarCitaUsuario(id, { texto: nuevoTexto, autor: nuevoAutor })
+            citaEditandoId = null
+          }
+          renderizarCitas()
+        })
+
+        el.querySelector('.cita-borrar')?.addEventListener('click', (e) => {
+          e.stopPropagation()
+          const c = citas.find((x) => x.id === id)
+          citas = citas.filter((x) => x.id !== id)
+          if (citaEditandoId === id) citaEditandoId = null
+          if (!c?.esBorrador) borrarCitaUsuario(id)
+          renderizarCitas()
+        })
+      })
+    }
+
     window.addEventListener(
       'mousemove',
       (e) => {
@@ -410,13 +528,17 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       'mouseup',
       () => {
         if (!arrastre) return
-        const { id, posX, posY, distancia } = arrastre
+        const { tipo, id, posX, posY, distancia } = arrastre
         if (distancia >= 4) {
-          const p = postits.find((x) => x.id === id)
-          if (p) {
-            p.pos_x = posX
-            p.pos_y = posY
-            if (!p.esBorrador) actualizarPostIt(id, { pos_x: posX, pos_y: posY })
+          const lista = tipo === 'cita' ? citas : postits
+          const item = lista.find((x) => x.id === id)
+          if (item) {
+            item.pos_x = posX
+            item.pos_y = posY
+            if (!item.esBorrador) {
+              if (tipo === 'cita') actualizarCitaUsuario(id, { pos_x: posX, pos_y: posY })
+              else actualizarPostIt(id, { pos_x: posX, pos_y: posY })
+            }
           }
         }
         arrastre = null
@@ -427,6 +549,11 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
     obtenerPostIts(recuerdo.id).then((lista) => {
       postits = lista
       renderizarPostits()
+    })
+
+    obtenerCitasUsuario(recuerdo.id).then((lista) => {
+      citas = lista
+      renderizarCitas()
     })
 
     botonNuevoPostit.addEventListener('click', (e) => {
@@ -450,6 +577,28 @@ export function abrirTarjetaCentrada(secuencia, indiceInicial, { onCerrar } = {}
       postitEditandoId = borrador.id
       renderizarPostits()
       contenedorPostits.querySelector(`.postit[data-id="${borrador.id}"] .postit-texto`)?.focus()
+    })
+
+    botonNuevaCita.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const fotoRect = overlay.querySelector('.tc-foto').getBoundingClientRect()
+      const posX = fotoRect.right - 24 - window.innerWidth / 2
+      const posY = fotoRect.top + 24 - window.innerHeight / 2
+      // Misma idea que el borrador de post-it: no existe en el backend hasta
+      // que se guarde por primera vez.
+      contadorBorradorCita -= 1
+      const borrador = {
+        id: contadorBorradorCita,
+        texto: '',
+        autor: '',
+        pos_x: posX,
+        pos_y: posY,
+        esBorrador: true,
+      }
+      citas.push(borrador)
+      citaEditandoId = borrador.id
+      renderizarCitas()
+      contenedorCitas.querySelector(`.cita[data-id="${borrador.id}"] .cita-texto`)?.focus()
     })
 
     const recuerdoEl = overlay.querySelector('.tc-recuerdo')

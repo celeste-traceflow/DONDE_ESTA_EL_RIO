@@ -128,6 +128,64 @@ app.post("/api/conexiones", (req, res) => {
   }
 });
 
+app.get("/api/citas-usuario/:recuerdoId", (req, res) => {
+  try {
+    const filas = db
+      .prepare(
+        "select id, texto, autor, pos_x, pos_y, recuerdo_cercano_id, creado_en from citas_usuario where recuerdo_cercano_id = ? order by creado_en asc"
+      )
+      .all(req.params.recuerdoId);
+    res.json(filas);
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
+app.post("/api/citas-usuario", (req, res) => {
+  const { recuerdo_cercano_id, texto, autor, pos_x, pos_y } = req.body;
+  if (!recuerdo_cercano_id) {
+    return res.status(400).json({ status: "error", mensaje: "Falta recuerdo_cercano_id" });
+  }
+  try {
+    const fila = db
+      .prepare(
+        `insert into citas_usuario (texto, autor, recuerdo_cercano_id, pos_x, pos_y)
+         values (?, ?, ?, ?, ?)
+         returning id, texto, autor, pos_x, pos_y, recuerdo_cercano_id, creado_en`
+      )
+      .get(texto || "", autor || null, recuerdo_cercano_id, pos_x ?? 0, pos_y ?? 0);
+    res.json(fila);
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
+app.put("/api/citas-usuario/:id", (req, res) => {
+  const { texto = null, autor = null, pos_x = null, pos_y = null } = req.body;
+  try {
+    db.prepare(
+      `update citas_usuario set
+         texto = coalesce(?, texto),
+         autor = coalesce(?, autor),
+         pos_x = coalesce(?, pos_x),
+         pos_y = coalesce(?, pos_y)
+       where id = ?`
+    ).run(texto, autor, pos_x, pos_y, req.params.id);
+    res.json({ status: "ok" });
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
+app.delete("/api/citas-usuario/:id", (req, res) => {
+  try {
+    db.prepare("delete from citas_usuario where id = ?").run(req.params.id);
+    res.json({ status: "ok" });
+  } catch (err) {
+    res.status(500).json({ status: "error", mensaje: err.message });
+  }
+});
+
 app.get("/api/post-its-conteo", (req, res) => {
   try {
     const filas = db.prepare("select recuerdo_id, count(*) as n from post_its group by recuerdo_id").all();
