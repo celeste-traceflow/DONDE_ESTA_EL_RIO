@@ -235,7 +235,9 @@ export function renderCauce(container, { recuerdos, citas }) {
   // vista inicial) al portapapeles, sin pasar por la consola del navegador
   // ni agregar un botón visible al menú.
   window.addEventListener('keydown', (e) => {
-    if (!e.altKey || !e.shiftKey || e.key.toLowerCase() !== 'g') return
+    // e.code (tecla física) en vez de e.key: en Mac, Option cambia qué
+    // carácter produce la G (por ejemplo "©"), así que e.key nunca daba "g".
+    if (!e.altKey || !e.shiftKey || e.code !== 'KeyG') return
     const posiciones = cargarPosicionesGuardadas()
     const coincidencia = mundo.style.transform.match(/translate\(([-\d.]+)px, ([-\d.]+)px\) scale\(([\d.]+)\)/)
     const vista = coincidencia
