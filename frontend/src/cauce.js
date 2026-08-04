@@ -1,4 +1,5 @@
 import layoutInicial from './layout-inicial.json'
+import vistaInicialGuardada from './vista-inicial.json'
 import { abrirTarjetaCentrada } from './tarjeta-centrada.js'
 import { sincronizarEmbeddingsYConexiones } from './conexiones.js'
 import { obtenerConexiones, obtenerTodosTagsEstado, obtenerPostItsConteo } from './api.js'
@@ -10,6 +11,15 @@ import { crearMapaFondo } from './mapa-fondo.js'
 const AVANCE_RATIO = 0.8
 
 const CLAVE_POSICIONES = 'rio-cauce-posiciones'
+const CLAVE_VISTA_INICIAL = 'rio-cauce-vista-inicial'
+
+function cargarVistaInicialGuardada() {
+  try {
+    return JSON.parse(localStorage.getItem(CLAVE_VISTA_INICIAL))
+  } catch {
+    return null
+  }
+}
 
 // Profundidad ligada al sedimento: cuanto más se tocó una tarjeta (conexiones,
 // subrayados/tachados, post-its), más "cerca" se siente — se mueve un poco más
@@ -362,6 +372,11 @@ function limites(layout) {
 }
 
 function calcularVistaInicial(viewport, layout) {
+  // Si Cele ya eligió y guardó una vista de arranque (a mano, navegando y
+  // guardando), esa manda por sobre el cálculo automático de acá abajo.
+  const guardada = cargarVistaInicialGuardada() || vistaInicialGuardada
+  if (guardada) return guardada
+
   const rect = viewport.getBoundingClientRect()
   const avgX = layout.reduce((s, i) => s + i.x, 0) / layout.length
   const avgY = layout.reduce((s, i) => s + i.y, 0) / layout.length
