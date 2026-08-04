@@ -258,18 +258,21 @@ function formaRio(x) {
   )
 }
 
+// El cauce avanza en vertical (de arriba hacia abajo) y ondula en horizontal
+// — antes era al revés. formaRio() es la misma curva; lo que cambia es qué
+// eje es "el que avanza" y cuál "el que ondula".
 function ubicarEnCascada(items) {
   const puntos = []
   const paso = 3 // resolución de muestreo del camino, en px
-  let x = 0
-  let prevX = 0
-  let prevY = formaRio(0)
+  let y = 0
+  let prevX = formaRio(0)
+  let prevY = 0
   let distAcumulada = 0
   let proximaDistancia = 0
   let idx = 0
 
   while (idx < items.length) {
-    const y = formaRio(x)
+    const x = formaRio(y)
     const dx = x - prevX
     const dy = y - prevY
     distAcumulada += Math.hypot(dx, dy)
@@ -300,7 +303,7 @@ function ubicarEnCascada(items) {
       proximaDistancia = distAcumulada + ancho * AVANCE_RATIO
     }
 
-    x += paso
+    y += paso
   }
 
   return puntos
