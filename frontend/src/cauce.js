@@ -231,6 +231,22 @@ export function renderCauce(container, { recuerdos, citas }) {
     }
   })
 
+  // Atajo invisible (Alt+Shift+G) para copiar el acomodo actual (posiciones +
+  // vista inicial) al portapapeles, sin pasar por la consola del navegador
+  // ni agregar un botón visible al menú.
+  window.addEventListener('keydown', (e) => {
+    if (!e.altKey || !e.shiftKey || e.key.toLowerCase() !== 'g') return
+    const posiciones = cargarPosicionesGuardadas()
+    const coincidencia = mundo.style.transform.match(/translate\(([-\d.]+)px, ([-\d.]+)px\) scale\(([\d.]+)\)/)
+    const vista = coincidencia
+      ? { x: parseFloat(coincidencia[1]), y: parseFloat(coincidencia[2]), scale: parseFloat(coincidencia[3]) }
+      : null
+    navigator.clipboard
+      .writeText(JSON.stringify({ posiciones, vista }))
+      .then(() => alert('Diseño del Cauce copiado — pegalo en el chat con Claude.'))
+      .catch(() => alert('No se pudo copiar. Avisale a Claude para resolverlo de otra forma.'))
+  })
+
   // Corre en segundo plano: no bloquea el Cauce, que ya se ve con los datos
   // estáticos. La primera vez calcula los embeddings que falten (puede
   // tardar); las siguientes veces ya están cacheados en Postgres.
