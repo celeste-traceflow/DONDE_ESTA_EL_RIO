@@ -147,7 +147,7 @@
 }
 
 .tarjeta-cita {
-  background: var(--color-acento);
+  background: var(--color-cita);
   color: var(--color-tinta);
   padding: 0.5rem 0.6rem;
   border-radius: 0;
