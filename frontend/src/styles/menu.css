@@ -1,0 +1,87 @@
+/* Menú superior — pill con la sección actual, siempre visible en las 4 secciones */
+.menu-superior-pill {
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--color-tinta);
+  border-radius: 999px;
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  font-family: var(--font-maquina);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  z-index: 3000;
+}
+
+.menu-superior-hamburguesa {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--color-tinta);
+  cursor: pointer;
+}
+
+.menu-superior-separador {
+  width: 1px;
+  height: 1em;
+  background: var(--color-tinta);
+  opacity: 0.5;
+}
+
+.menu-superior-pill.enfocado-atras {
+  opacity: 0.15;
+  filter: blur(3px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.menu-desplegable[hidden] {
+  display: none;
+}
+
+.menu-desplegable {
+  position: fixed;
+  top: 4.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-papel);
+  border: 1px solid var(--color-tinta);
+  border-radius: 14px;
+  overflow: hidden;
+  z-index: 3000;
+  min-width: 220px;
+}
+
+.menu-desplegable-item {
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(43, 38, 32, 0.15);
+  padding: 0.7rem 1.2rem;
+  font-family: var(--font-maquina);
+  font-size: 0.8rem;
+  color: var(--color-tinta);
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-desplegable-item:last-child {
+  border-bottom: none;
+}
+
+.menu-desplegable-item:hover {
+  background: rgba(43, 38, 32, 0.06);
+}
+
+.menu-desplegable-item.activo {
+  color: var(--color-acento);
+}

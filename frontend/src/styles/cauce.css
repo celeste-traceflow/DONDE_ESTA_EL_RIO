@@ -16,7 +16,6 @@
   transition: filter 0.2s ease;
 }
 
-.cauce-pill.enfocado-atras,
 .cauce-nav-espacial.enfocado-atras {
   opacity: 0.15;
   filter: blur(3px);
@@ -165,33 +164,6 @@
 .tarjeta-cita .autor {
   font-family: var(--font-maquina);
   font-size: 0.34rem;
-}
-
-/* Pill superior con la sección actual */
-.cauce-pill {
-  position: fixed;
-  top: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  padding: 0.6rem 1.2rem;
-  border: 1px solid var(--color-tinta);
-  border-radius: 999px;
-  background: var(--color-papel);
-  color: var(--color-tinta);
-  font-family: var(--font-maquina);
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
-  z-index: 1000;
-}
-
-.cauce-pill .separador {
-  width: 1px;
-  height: 1em;
-  background: var(--color-tinta);
-  opacity: 0.5;
 }
 
 /* Cluster de navegación espacial — vértice inferior izquierdo, aparte del menú operativo */

@@ -1,6 +1,8 @@
 @import './styles/tokens.css';
+@import './styles/menu.css';
 @import './styles/cauce.css';
 @import './styles/tarjeta-centrada.css';
+@import './styles/nacimiento.css';
 
 html, body {
   margin: 0;
@@ -10,4 +12,18 @@ html, body {
 
 #app {
   height: 100%;
+}
+
+.seccion-contenido {
+  height: 100%;
+}
+
+.seccion-proximamente {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  font-family: var(--font-maquina);
 }

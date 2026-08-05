@@ -1,0 +1,32 @@
+.nacimiento-pagina {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7rem 1.5rem 3rem;
+  background: var(--color-papel);
+}
+
+.nacimiento-tarjeta {
+  background: #fff;
+  max-width: 780px;
+  width: 100%;
+  padding: 3rem 3.5rem;
+  box-shadow: 0 8px 24px rgba(43, 38, 32, 0.2);
+}
+
+.nacimiento-aclaracion {
+  font-family: var(--font-maquina);
+  color: var(--color-acento);
+  font-size: 0.8rem;
+  margin: 0 0 2rem;
+}
+
+.nacimiento-texto {
+  font-family: var(--font-autorial);
+  font-weight: 300;
+  color: #000000;
+  font-size: 1.15rem;
+  line-height: 1.65;
+  margin: 0;
+}

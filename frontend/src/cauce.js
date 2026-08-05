@@ -96,11 +96,6 @@ export function renderCauce(container, { recuerdos, citas }) {
     <div class="cauce-viewport">
       <div class="cauce-mundo"></div>
     </div>
-    <div class="cauce-pill">
-      <span class="icono-menu">☰</span>
-      <span class="separador"></span>
-      <span>CAUCE</span>
-    </div>
     <div class="cauce-nav-espacial">
       <button type="button" data-accion="zoom-in" title="Acercar">+</button>
       <button type="button" data-accion="zoom-out" title="Alejar">–</button>
@@ -122,7 +117,6 @@ export function renderCauce(container, { recuerdos, citas }) {
     mundo.appendChild(crearTarjeta(item))
   }
 
-  const pill = container.querySelector('.cauce-pill')
   const navEspacial = container.querySelector('.cauce-nav-espacial')
   const botonModoConexiones = container.querySelector('.boton-modo-conexiones')
 
@@ -165,13 +159,14 @@ export function renderCauce(container, { recuerdos, citas }) {
 
   function abrirRecuerdoCentrado(data) {
     const indiceInicial = secuenciaRecuerdos.indexOf(data)
+    const pillGlobal = document.querySelector('.menu-superior-pill')
     viewport.classList.add('enfocado-atras')
-    pill.classList.add('enfocado-atras')
+    pillGlobal?.classList.add('enfocado-atras')
     navEspacial.classList.add('enfocado-atras')
     abrirTarjetaCentrada(secuenciaRecuerdos, indiceInicial, {
       onCerrar: () => {
         viewport.classList.remove('enfocado-atras')
-        pill.classList.remove('enfocado-atras')
+        pillGlobal?.classList.remove('enfocado-atras')
         navEspacial.classList.remove('enfocado-atras')
       },
     })
