@@ -10,12 +10,17 @@ export function renderNacimiento(container) {
     </div>
   `
 
+  // Radio bien más grande que en la tarjeta de recuerdo (7px): esta tarjeta
+  // es mucho más ancha, así que el festoneado necesita ondas grandes y
+  // visibles en vez de una textura fina.
+  const RADIO_ESTAMPILLA = 40
+
   const tarjeta = container.querySelector('.nacimiento-tarjeta')
-  aplicarBordeEstampilla(tarjeta)
+  aplicarBordeEstampilla(tarjeta, RADIO_ESTAMPILLA)
 
   // Igual que en la tarjeta de recuerdo: el alto real puede seguir
   // moviéndose (fuente cargando) después de la primera medición.
-  const observador = new ResizeObserver(() => aplicarBordeEstampilla(tarjeta))
+  const observador = new ResizeObserver(() => aplicarBordeEstampilla(tarjeta, RADIO_ESTAMPILLA))
   observador.observe(tarjeta)
 
   return {
