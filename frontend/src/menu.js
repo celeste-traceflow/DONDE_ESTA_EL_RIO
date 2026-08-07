@@ -3,7 +3,10 @@ export const SECCIONES = [
   { clave: 'inicio', etiqueta: 'Donde está el río' },
   { clave: 'nacimiento', etiqueta: 'Nacimiento' },
   { clave: 'dataset', etiqueta: 'Dataset sensible' },
-  { clave: 'rio', etiqueta: 'Río de recuerdos' },
+  // El pill (arriba) sigue diciendo "CAUCE" — es el nombre del estado
+  // dentro de "Río de recuerdos", más corto y ya conocido; el desplegable
+  // usa el nombre completo de la sección.
+  { clave: 'rio', etiqueta: 'Río de recuerdos', etiquetaPill: 'Cauce' },
 ]
 
 export function crearMenuSuperior(seccionActual, onNavegar) {
@@ -16,7 +19,7 @@ export function crearMenuSuperior(seccionActual, onNavegar) {
     <div class="menu-superior-pill">
       <button type="button" class="menu-superior-hamburguesa" title="Menú">☰</button>
       <span class="menu-superior-separador"></span>
-      <span class="menu-superior-etiqueta">${actual ? actual.etiqueta.toUpperCase() : ''}</span>
+      <span class="menu-superior-etiqueta">${actual ? (actual.etiquetaPill || actual.etiqueta).toUpperCase() : ''}</span>
     </div>
     <div class="menu-desplegable" hidden>
       ${SECCIONES.map(
